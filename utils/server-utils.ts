@@ -1,0 +1,501 @@
+import "server-only";
+import {
+  _PropertyData,
+  ActivityData,
+  AdminData,
+  AmenityData,
+  DefaultPricing,
+  UserData,
+} from "./types";
+import { DateTime } from "luxon";
+import { v4 } from "uuid";
+import { SpecialDateData } from "@/actions/propertyActions";
+import { rolesEnum } from "@/drizzle/schema";
+
+export function uniqueStringFilter(data: string[]): string[] {
+  const set = new Set<string>();
+  const res: string[] = [];
+  data.forEach((str) => {
+    if (!set.has(str)) {
+      set.add(str);
+      res.push(str);
+    }
+  });
+  return res;
+}
+
+export function parseLimitOffset(searchParams: {
+  [key: string]: string | string[] | undefined;
+}): { limit: number; offset: number } {
+  const { page, itemsPerPage } = searchParams;
+
+  let limit = 10;
+  let offset = 0;
+
+  if (itemsPerPage) {
+    const itemsPerPageNum = Number(itemsPerPage);
+    if (!Number.isNaN(itemsPerPageNum)) {
+      limit = Math.min(100, itemsPerPageNum);
+    }
+  }
+
+  if (page) {
+    const pageNum = Number(page);
+    if (!Number.isNaN(pageNum)) {
+      offset = Math.max(0, limit * (pageNum - 1));
+    }
+  }
+
+  return { limit, offset };
+}
+
+export function parseString(str: string | undefined): string | null {
+  if (str === undefined || str.length === 0) {
+    return null;
+  }
+  return str;
+}
+
+export function parseBoolean(str: string | undefined): boolean {
+  if (str?.toLowerCase() === "true") return true;
+  return false;
+}
+
+export function parseNumber(str: string | undefined): number | null {
+  if (str === undefined) {
+    return null;
+  }
+  const num = Number(str);
+  if (Number.isNaN(num)) {
+    throw new Error("Invalid Value");
+  }
+  return num;
+}
+
+export function parseDate(str: string | undefined): Date | null {
+  if (!str || str.length === 0) {
+    return null;
+  } else {
+    const dt = DateTime.fromFormat(str, "LLLL d, yyyy").setZone("UTC", {
+      keepLocalTime: true,
+    });
+    if (dt.isValid) {
+      return dt.toJSDate();
+    } else {
+      return null;
+    }
+  }
+}
+
+export function validatePricing(data: DefaultPricing) {
+  if (data.weekdayPrice === null || data.weekdayPrice <= 0) {
+    return "Invalid Weekday Pricing.";
+  }
+  if (data.weekendPrice === null || data.weekendPrice <= 0) {
+    return "Invalid Weekend Pricing.";
+  }
+  if (data.mondayPrice === null || data.mondayPrice <= 0) {
+    return "Invalid Monday Pricing.";
+  }
+  if (data.tuesdayPrice === null || data.tuesdayPrice <= 0) {
+    return "Invalid Tuesday Pricing.";
+  }
+  if (data.wednesdayPrice === null || data.wednesdayPrice <= 0) {
+    return "Invalid Wednesday Pricing.";
+  }
+  if (data.thursdayPrice === null || data.thursdayPrice <= 0) {
+    return "Invalid Thursday Pricing.";
+  }
+  if (data.fridayPrice === null || data.fridayPrice <= 0) {
+    return "Invalid Friday Pricing.";
+  }
+  if (data.saturdayPrice === null || data.saturdayPrice <= 0) {
+    return "Invalid Saturday Pricing.";
+  }
+  if (data.sundayPrice === null || data.sundayPrice <= 0) {
+    return "Invalid Sunday Pricing.";
+  }
+  if (data.daywisePrice === null) {
+    return "Missing day wise pricing flag.";
+  }
+}
+
+export function validatePropertyData(data: _PropertyData): string | null {
+  // Checks
+  if (!data.propertyName || data.propertyName.length === 0) {
+    return "Invalid Property Name.";
+  }
+  // Checking for repeated amenities
+  if (data.amenities) {
+    const uniqueAmenityTitles = uniqueStringFilter(
+      data.amenities.map((x) => x.amenity),
+    );
+    if (uniqueAmenityTitles.length !== data.amenities.length) {
+      return "Repeated amenities are not allowed.";
+    }
+  }
+  if (data.activities) {
+    const uniqueActivityTitles = uniqueStringFilter(
+      data.activities.map((x) => x.activity),
+    );
+    if (uniqueActivityTitles.length !== data.activities.length) {
+      return "Repeated activities are not allowed.";
+    }
+  }
+  return null;
+}
+
+export function parseSpecialDates(formData: FormData): {
+  data?: SpecialDateData[];
+  error?: string;
+} {
+  const seen = new Set<string>();
+
+  function isUniqueString(str: string): string | null {
+    if (seen.has(str)) {
+      return null; // Found a repeated string
+    } else {
+      seen.add(str);
+      return str; // New string
+    }
+  }
+
+  const res: SpecialDateData[] = [];
+  for (const key of formData.keys()) {
+    if (key.startsWith("special-date-")) {
+      const uuid = key.substring(13);
+      const dateStr = formData.get(`special-date-${uuid}`)?.toString();
+      if (!dateStr) {
+        return { error: "Invalid date." };
+      }
+
+      const uniqueString = isUniqueString(dateStr);
+      if (!uniqueString) {
+        return { error: "Repeated dates are not allowed." };
+      }
+
+      const date = parseDate(uniqueString);
+      if (!date) {
+        return { error: "Invalid date." };
+      }
+
+      const data: SpecialDateData = {
+        id: v4(),
+        date: date,
+        price: parseNumber(formData.get(`special-price-${uuid}`)?.toString()),
+        adultExtraGuestCharge: parseNumber(
+          formData.get(`special-adultExtraGuestCharge-${uuid}`)?.toString(),
+        ),
+        childExtraGuestCharge: parseNumber(
+          formData.get(`special-childExtraGuestCharge-${uuid}`)?.toString(),
+        ),
+        infantExtraGuestCharge: parseNumber(
+          formData.get(`special-infantExtraGuestCharge-${uuid}`)?.toString(),
+        ),
+        baseGuestCount: parseNumber(
+          formData.get(`special-baseGuestCount-${uuid}`)?.toString(),
+        ),
+        discount: parseNumber(
+          formData.get(`special-discount-${uuid}`)?.toString(),
+        ),
+      };
+      res.push(data);
+    }
+  }
+  console.log(JSON.stringify(res));
+  return { data: res };
+}
+
+export function parseAdminFormData(formData: FormData): AdminData {
+  const firstName = parseString(formData.get("firstName")?.toString());
+  const email = parseString(formData.get("email")?.toString());
+  if (firstName === null) {
+    throw new Error("Please enter admin first name.");
+  }
+  if (email === null) {
+    throw new Error("Please enter admin email.");
+  }
+  return {
+    id: v4(),
+    firstName,
+    lastName: parseString(formData.get("lastName")?.toString()),
+    email,
+    phoneNumber: parseString(formData.get("phoneNumber")?.toString()),
+  };
+}
+
+export function parsePropertyFormData(formData: FormData): _PropertyData {
+  const amenitiesIds: string[] = [];
+  const activitiesIds: string[] = [];
+
+  for (const key of formData.keys()) {
+    if (key.startsWith("amenity-title-")) {
+      amenitiesIds.push(key.substring(14));
+    } else if (key.startsWith("activity-title-")) {
+      activitiesIds.push(key.substring(15));
+    }
+  }
+
+  const amenities: AmenityData[] = uniqueStringFilter(amenitiesIds).map(
+    (id) => {
+      const title = parseString(
+        formData.get(`amenity-title-${id}`)?.toString(),
+      );
+      const weight = parseNumber(
+        formData.get(`amenity-weight-${id}`)?.toString(),
+      );
+      const isPaid = parseBoolean(
+        formData.get(`amenity-isPaid-${id}`)?.toString(),
+      );
+      const isUSP = parseBoolean(
+        formData.get(`amenity-isUSP-${id}`)?.toString(),
+      );
+      if (!title || title.length === 0) {
+        throw new Error("Invalid Amenity name.");
+      }
+      return { id: v4(), amenity: title, weight, isPaid, isUSP };
+    },
+  );
+
+  const activities: ActivityData[] = uniqueStringFilter(activitiesIds).map(
+    (id) => {
+      const title = parseString(
+        formData.get(`activity-title-${id}`)?.toString(),
+      );
+      const weight = parseNumber(
+        formData.get(`activity-weight-${id}`)?.toString(),
+      );
+      const isPaid = parseBoolean(
+        formData.get(`activity-isPaid-${id}`)?.toString(),
+      );
+      const isUSP = parseBoolean(
+        formData.get(`activity-isUSP-${id}`)?.toString(),
+      );
+      if (!title || title.length === 0) {
+        throw new Error("Invalid Activity name.");
+      }
+      return { id: v4(), activity: title, weight, isPaid, isUSP };
+    },
+  );
+
+  return {
+    id: v4(),
+    propertyName: parseString(formData.get("propertyName")?.toString()),
+    propertyCode: parseString(formData.get("propertyCode")?.toString()),
+    baseGuestCount: parseNumber(formData.get("baseGuestCount")?.toString()),
+    maxGuestCount: parseNumber(formData.get("maxGuestCount")?.toString()),
+
+    weekdayPrice: parseNumber(formData.get("weekdayPrice")?.toString()),
+    weekdayAdultExtraGuestCharge: parseNumber(
+      formData.get("weekdayAdultExtraGuestCharge")?.toString(),
+    ),
+    weekdayChildExtraGuestCharge: parseNumber(
+      formData.get("weekdayChildExtraGuestCharge")?.toString(),
+    ),
+    weekdayInfantExtraGuestCharge: parseNumber(
+      formData.get("weekdayInfantExtraGuestCharge")?.toString(),
+    ),
+    weekdayBaseGuestCount: parseNumber(
+      formData.get("weekdayBaseGuestCount")?.toString(),
+    ),
+    weekdayDiscount: parseNumber(formData.get("weekdayDiscount")?.toString()),
+
+    weekendPrice: parseNumber(formData.get("weekendPrice")?.toString()),
+    weekendAdultExtraGuestCharge: parseNumber(
+      formData.get("weekendAdultExtraGuestCharge")?.toString(),
+    ),
+    weekendChildExtraGuestCharge: parseNumber(
+      formData.get("weekendChildExtraGuestCharge")?.toString(),
+    ),
+    weekendInfantExtraGuestCharge: parseNumber(
+      formData.get("weekendInfantExtraGuestCharge")?.toString(),
+    ),
+    weekendBaseGuestCount: parseNumber(
+      formData.get("weekendBaseGuestCount")?.toString(),
+    ),
+    weekendDiscount: parseNumber(formData.get("weekendDiscount")?.toString()),
+
+    weekendSaturdayPrice: parseNumber(
+      formData.get("weekendSaturdayPrice")?.toString(),
+    ),
+    weekendSaturdayAdultExtraGuestCharge: parseNumber(
+      formData.get("weekendSaturdayAdultExtraGuestCharge")?.toString(),
+    ),
+    weekendSaturdayChildExtraGuestCharge: parseNumber(
+      formData.get("weekendSaturdayChildExtraGuestCharge")?.toString(),
+    ),
+    weekendSaturdayInfantExtraGuestCharge: parseNumber(
+      formData.get("weekendSaturdayInfantExtraGuestCharge")?.toString(),
+    ),
+    weekendSaturdayBaseGuestCount: parseNumber(
+      formData.get("weekendSaturdayBaseGuestCount")?.toString(),
+    ),
+    weekendSaturdayDiscount: parseNumber(
+      formData.get("weekendSaturdayDiscount")?.toString(),
+    ),
+
+    mondayPrice: parseNumber(formData.get("mondayPrice")?.toString()),
+    mondayAdultExtraGuestCharge: parseNumber(
+      formData.get("mondayAdultExtraGuestCharge")?.toString(),
+    ),
+    mondayChildExtraGuestCharge: parseNumber(
+      formData.get("mondayChildExtraGuestCharge")?.toString(),
+    ),
+    mondayInfantExtraGuestCharge: parseNumber(
+      formData.get("mondayInfantExtraGuestCharge")?.toString(),
+    ),
+    mondayBaseGuestCount: parseNumber(
+      formData.get("mondayBaseGuestCount")?.toString(),
+    ),
+    mondayDiscount: parseNumber(formData.get("mondayDiscount")?.toString()),
+
+    tuesdayPrice: parseNumber(formData.get("tuesdayPrice")?.toString()),
+    tuesdayAdultExtraGuestCharge: parseNumber(
+      formData.get("tuesdayAdultExtraGuestCharge")?.toString(),
+    ),
+    tuesdayChildExtraGuestCharge: parseNumber(
+      formData.get("tuesdayChildExtraGuestCharge")?.toString(),
+    ),
+    tuesdayInfantExtraGuestCharge: parseNumber(
+      formData.get("tuesdayInfantExtraGuestCharge")?.toString(),
+    ),
+    tuesdayBaseGuestCount: parseNumber(
+      formData.get("tuesdayBaseGuestCount")?.toString(),
+    ),
+    tuesdayDiscount: parseNumber(formData.get("tuesdayDiscount")?.toString()),
+
+    wednesdayPrice: parseNumber(formData.get("wednesdayPrice")?.toString()),
+    wednesdayAdultExtraGuestCharge: parseNumber(
+      formData.get("wednesdayAdultExtraGuestCharge")?.toString(),
+    ),
+    wednesdayChildExtraGuestCharge: parseNumber(
+      formData.get("wednesdayChildExtraGuestCharge")?.toString(),
+    ),
+    wednesdayInfantExtraGuestCharge: parseNumber(
+      formData.get("wednesdayInfantExtraGuestCharge")?.toString(),
+    ),
+    wednesdayBaseGuestCount: parseNumber(
+      formData.get("wednesdayBaseGuestCount")?.toString(),
+    ),
+    wednesdayDiscount: parseNumber(
+      formData.get("wednesdayDiscount")?.toString(),
+    ),
+
+    thursdayPrice: parseNumber(formData.get("thursdayPrice")?.toString()),
+    thursdayAdultExtraGuestCharge: parseNumber(
+      formData.get("thursdayAdultExtraGuestCharge")?.toString(),
+    ),
+    thursdayChildExtraGuestCharge: parseNumber(
+      formData.get("thursdayChildExtraGuestCharge")?.toString(),
+    ),
+    thursdayInfantExtraGuestCharge: parseNumber(
+      formData.get("thursdayInfantExtraGuestCharge")?.toString(),
+    ),
+    thursdayBaseGuestCount: parseNumber(
+      formData.get("thursdayBaseGuestCount")?.toString(),
+    ),
+    thursdayDiscount: parseNumber(formData.get("thursdayDiscount")?.toString()),
+
+    fridayPrice: parseNumber(formData.get("fridayPrice")?.toString()),
+    fridayAdultExtraGuestCharge: parseNumber(
+      formData.get("fridayAdultExtraGuestCharge")?.toString(),
+    ),
+    fridayChildExtraGuestCharge: parseNumber(
+      formData.get("fridayChildExtraGuestCharge")?.toString(),
+    ),
+    fridayInfantExtraGuestCharge: parseNumber(
+      formData.get("fridayInfantExtraGuestCharge")?.toString(),
+    ),
+    fridayBaseGuestCount: parseNumber(
+      formData.get("fridayBaseGuestCount")?.toString(),
+    ),
+    fridayDiscount: parseNumber(formData.get("fridayDiscount")?.toString()),
+
+    saturdayPrice: parseNumber(formData.get("saturdayPrice")?.toString()),
+    saturdayAdultExtraGuestCharge: parseNumber(
+      formData.get("saturdayAdultExtraGuestCharge")?.toString(),
+    ),
+    saturdayChildExtraGuestCharge: parseNumber(
+      formData.get("saturdayChildExtraGuestCharge")?.toString(),
+    ),
+    saturdayInfantExtraGuestCharge: parseNumber(
+      formData.get("saturdayInfantExtraGuestCharge")?.toString(),
+    ),
+    saturdayBaseGuestCount: parseNumber(
+      formData.get("saturdayBaseGuestCount")?.toString(),
+    ),
+    saturdayDiscount: parseNumber(formData.get("saturdayDiscount")?.toString()),
+
+    sundayPrice: parseNumber(formData.get("mondayPrice")?.toString()),
+    sundayAdultExtraGuestCharge: parseNumber(
+      formData.get("sundayAdultExtraGuestCharge")?.toString(),
+    ),
+    sundayChildExtraGuestCharge: parseNumber(
+      formData.get("sundayChildExtraGuestCharge")?.toString(),
+    ),
+    sundayInfantExtraGuestCharge: parseNumber(
+      formData.get("sundayInfantExtraGuestCharge")?.toString(),
+    ),
+    sundayBaseGuestCount: parseNumber(
+      formData.get("sundayBaseGuestCount")?.toString(),
+    ),
+    sundayDiscount: parseNumber(formData.get("sundayDiscount")?.toString()),
+
+    daywisePrice: parseBoolean(formData.get("daywisePrice")?.toString()),
+
+    isDisabled: parseBoolean(formData.get("isDisabled")?.toString()),
+
+    bedroomCount: parseNumber(formData.get("bedroomCount")?.toString()),
+    bathroomCount: parseNumber(formData.get("bathroomCount")?.toString()),
+    doubleBedCount: parseNumber(formData.get("doubleBedCount")?.toString()),
+    singleBedCount: parseNumber(formData.get("singleBedCount")?.toString()),
+    mattressCount: parseNumber(formData.get("mattressCount")?.toString()),
+
+    bookingType: parseString(formData.get("bookingType")?.toString()),
+    defaultGstPercentage: parseNumber(
+      formData.get("defaultGstPercentage")?.toString(),
+    ),
+
+    latitude: parseString(formData.get("latitude")?.toString()),
+    longtitude: parseString(formData.get("longtitude")?.toString()),
+    mapLink: parseString(formData.get("mapLink")?.toString()),
+
+    address: parseString(formData.get("address")?.toString()),
+    areaId: parseString(formData.get("areaId")?.toString()),
+    cityId: parseString(formData.get("cityId")?.toString()),
+    stateId: parseString(formData.get("stateId")?.toString()),
+    pincode: parseString(formData.get("pincode")?.toString()),
+
+    propertyTypeId: parseString(formData.get("propertyTypeId")?.toString()),
+    activities,
+    amenities,
+  };
+}
+
+export function parseUserFormData(formData: FormData): UserData {
+  const firstName = parseString(formData.get("firstName")?.toString());
+  const email = parseString(formData.get("email")?.toString());
+  const role = rolesEnum.enumValues.find(
+    (x) => x === parseString(formData.get("role")?.toString()),
+  );
+
+  if (!firstName) {
+    throw new Error("Name missing.");
+  }
+  if (!email) {
+    throw new Error("Email missing.");
+  }
+  if (!role) {
+    throw new Error("Invalid role.");
+  }
+
+  return {
+    id: v4(),
+    firstName,
+    lastName: parseString(formData.get("lastName")?.toString()),
+    mobileNumber: parseString(formData.get("mobileNumber")?.toString()),
+    whatsappNumber: parseString(formData.get("whatsappNumber")?.toString()),
+    email,
+    role,
+  };
+}

@@ -1,0 +1,84 @@
+import { Breadcrumb, BreadcrumbItem, Card } from "flowbite-react";
+import { _CityData, ServerPageProps } from "@/utils/types";
+import { db } from "@/drizzle/db";
+import { _cityFields, areaFields, stateFields } from "@/drizzle/fields";
+import { areas, cities, states } from "@/drizzle/schema";
+import { eq } from "drizzle-orm";
+import AreaEditor from "./AreaEditor";
+
+export default async function Page({ params }: ServerPageProps) {
+  const { id } = await params;
+
+  let idString = "";
+  if (id === undefined) {
+    idString = "";
+  } else if (typeof id === "string") {
+    idString = id;
+  } else {
+    idString = id[0];
+  }
+  const data = await db
+    .select(areaFields)
+    .from(areas)
+    .leftJoin(cities, eq(areas.cityId, cities.id))
+    .leftJoin(states, eq(cities.stateId, states.id))
+    .where(eq(areas.id, idString))
+    .catch((err) => {
+      console.log("DB Error: ", err);
+      throw new Error("Database Error");
+    });
+
+  if (data.length === 0) {
+    throw new Error("Not Found");
+  }
+
+  let cityData: _CityData[] = [];
+  if (data[0].state) {
+    cityData = await db
+      .select(_cityFields)
+      .from(cities)
+      .where(eq(cities.stateId, data[0].state.id))
+      .catch((err) => {
+        console.log("DB Error: ", err);
+        throw new Error("Database Error");
+      });
+  }
+
+  const stateData = await db
+    .select(stateFields)
+    .from(states)
+    .catch((err) => {
+      console.log("DB Error: ", err);
+      throw new Error("Database Error");
+    });
+
+  return (
+    <div className="flex w-full flex-col">
+      <Card className="w-full bg-white">
+        <div className="flex flex-col gap-2">
+          <h5 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+            Areas
+          </h5>
+
+          <Breadcrumb className="bg-gray-50 pb-3 dark:bg-gray-800">
+            <BreadcrumbItem href="/">Home</BreadcrumbItem>
+            <BreadcrumbItem href="/admin">Admin</BreadcrumbItem>
+            <BreadcrumbItem href="/admin/areas">Areas</BreadcrumbItem>
+            <BreadcrumbItem href="#">Edit</BreadcrumbItem>
+          </Breadcrumb>
+        </div>
+
+        <div className="mx-auto flex w-[900px] flex-col gap-5 overflow-x-auto rounded-xl bg-gray-900 p-5">
+          <h6 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white">
+            Edit Area
+          </h6>
+          <AreaEditor
+            data={data[0]}
+            stateData={stateData}
+            cityData={cityData}
+          />
+        </div>
+      </Card>
+    </div>
+  );
+}
