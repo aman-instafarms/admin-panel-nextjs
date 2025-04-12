@@ -30,6 +30,9 @@ export const createUser = async (
     })
     .catch((err) => {
       console.log("DB Error: ", err);
+      if (err?.constraint === "uniqueEmail") {
+        throw new Error("Email already registered with a user with this role.");
+      }
       throw new Error("Database error.");
     });
 };
@@ -66,6 +69,9 @@ export const editUser = async (
     })
     .catch((err) => {
       console.log("DB Error: ", err);
+      if (err?.constraint === "uniqueEmail") {
+        throw new Error("Email already registered with a user with this role.");
+      }
       throw new Error("Database error.");
     });
 };

@@ -9,8 +9,9 @@ import {
   primaryKey,
   date,
   json,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import { ActivityData, AmenityData } from "@/utils/types";
 
 export const rolesEnum = pgEnum("role", ["Owner", "Manager", "Caretaker"]);
@@ -46,7 +47,10 @@ export const users = pgTable(
     role: rolesEnum("role").notNull(),
   },
   (table) => {
-    return [primaryKey({ columns: [table.id, table.role] })];
+    return [
+      primaryKey({ columns: [table.id, table.role] }),
+      uniqueIndex("uniqueEmail").on(sql`lower(${table.email})`, table.role),
+    ];
   },
 );
 
@@ -83,13 +87,13 @@ export const ownersOnPropertiesRelations = relations(
 export const managersOnProperties = pgTable(
   "managersOnProperties",
   {
-    ownerId: uuid("ownerId").notNull(),
+    managerId: uuid("managerId").notNull(),
     role: rolesEnum("role").notNull(),
     propertyId: uuid("propertyId").notNull(),
   },
   (table) => {
     return {
-      pk: primaryKey({ columns: [table.ownerId, table.propertyId] }),
+      pk: primaryKey({ columns: [table.managerId, table.propertyId] }),
     };
   },
 );
@@ -98,7 +102,7 @@ export const managersOnPropertiesRelations = relations(
   managersOnProperties,
   ({ one }) => ({
     owner: one(users, {
-      fields: [managersOnProperties.ownerId, managersOnProperties.role],
+      fields: [managersOnProperties.managerId, managersOnProperties.role],
       references: [users.id, users.role],
     }),
     property: one(properties, {
@@ -111,13 +115,13 @@ export const managersOnPropertiesRelations = relations(
 export const caretakersOnProperties = pgTable(
   "caretakersOnProperties",
   {
-    ownerId: uuid("ownerId").notNull(),
+    caretakerId: uuid("caretakerId").notNull(),
     role: rolesEnum("role").notNull(),
     propertyId: uuid("propertyId").notNull(),
   },
   (table) => {
     return {
-      pk: primaryKey({ columns: [table.ownerId, table.propertyId] }),
+      pk: primaryKey({ columns: [table.caretakerId, table.propertyId] }),
     };
   },
 );
@@ -126,7 +130,7 @@ export const caretakersOnPropertiesRelations = relations(
   caretakersOnProperties,
   ({ one }) => ({
     owner: one(users, {
-      fields: [caretakersOnProperties.ownerId, caretakersOnProperties.role],
+      fields: [caretakersOnProperties.caretakerId, caretakersOnProperties.role],
       references: [users.id, users.role],
     }),
     property: one(properties, {

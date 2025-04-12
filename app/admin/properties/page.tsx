@@ -16,9 +16,10 @@ import {
   Button,
 } from "flowbite-react";
 import Link from "next/link";
-import { HiPencil } from "react-icons/hi";
+import { HiPencil, HiUser } from "react-icons/hi";
 import DeletePropertyButton from "./DeletePropertyButton";
 import { eq } from "drizzle-orm";
+import Pagination from "@/components/Pagination";
 
 export default async function Page({ searchParams }: ServerPageProps) {
   const { limit, offset } = parseLimitOffset(await searchParams);
@@ -64,6 +65,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
                 <TableHeadCell>Property Code</TableHeadCell>
                 <TableHeadCell>Location</TableHeadCell>
                 <TableHeadCell>Actions</TableHeadCell>
+                <TableHeadCell>People</TableHeadCell>
               </TableRow>
             </TableHead>
             <TableBody className="divide-y">
@@ -84,12 +86,24 @@ export default async function Page({ searchParams }: ServerPageProps) {
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-row items-center gap-3">
-                      <a href={`/admin/properties/${id}`} className="w-fit">
+                      <Link href={`/admin/properties/${id}`} className="w-fit">
                         <div className="rounded-md bg-blue-600 p-1">
                           <HiPencil size={20} className="text-white" />
                         </div>
-                      </a>
+                      </Link>
                       <DeletePropertyButton id={id} />
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-row items-center gap-3">
+                      <Link
+                        href={`/admin/properties/${id}/owners`}
+                        className="w-fit"
+                      >
+                        <div className="rounded-md bg-blue-600 p-1">
+                          <HiUser size={20} className="text-white" />
+                        </div>
+                      </Link>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -97,6 +111,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
             </TableBody>
           </Table>
         </div>
+        <Pagination />
       </Card>
     </div>
   );

@@ -1,6 +1,6 @@
 import { db } from "@/drizzle/db";
 import { userFields } from "@/drizzle/fields";
-import { users } from "@/drizzle/schema";
+import { ownersOnProperties, properties, users } from "@/drizzle/schema";
 import { parseFilterParams, parseLimitOffset } from "@/utils/server-utils";
 import { ServerPageProps } from "@/utils/types";
 import {
@@ -15,39 +15,67 @@ import {
   TableRow,
   Button,
 } from "flowbite-react";
-import Link from "next/link";
-import { HiPencil } from "react-icons/hi";
-import DeleteUserButton from "./DeleteAdminButton";
 import Searchbar from "@/components/Searchbar";
 import { like } from "drizzle-orm/pg-core/expressions";
-import { sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
+import AddOwnerButton from "./AddOwnerButton";
 import Pagination from "@/components/Pagination";
 
 const searchbarKeys = ["Name", "Email"];
 
-export default async function Page({ searchParams }: ServerPageProps) {
+export default async function Page({ searchParams, params }: ServerPageProps) {
+  const { id } = await params;
+
+  let idString = "";
+  if (id === undefined) {
+    idString = "";
+  } else if (typeof id === "string") {
+    idString = id;
+  } else {
+    idString = id[0];
+  }
+
+  const property = await db
+    .select({ id: properties.id, propertyCode: properties.propertyCode })
+    .from(properties)
+    .where(eq(properties.id, idString))
+    .limit(1)
+    .then((res) => {
+      if (res.length === 0) {
+        throw new Error("Not Found");
+      }
+      return res[0];
+    })
+    .catch((err) => {
+      console.log("DB Error: ", err);
+      throw new Error("Database Error");
+    });
+
   const { limit, offset } = parseLimitOffset(await searchParams);
   const filterParams = parseFilterParams(await searchParams);
 
-  const query = db.select(userFields).from(users);
+  const query = db
+    .select({ ...userFields, propertyId: ownersOnProperties.propertyId })
+    .from(users)
+    .leftJoin(ownersOnProperties, eq(users.id, ownersOnProperties.ownerId));
 
-  let queryWithFilter;
+  const filters = [eq(users.role, "Owner")];
+
   if (filterParams) {
     if (filterParams.searchKey === "Name") {
-      queryWithFilter = query.where(
+      filters.push(
         like(
           sql`LOWER(COALESCE(${users.firstName}, '') || ' ' || COALESCE(${users.lastName}, ''))`,
           `${filterParams.searchValue.toLowerCase()}%`,
         ),
       );
     } else if (filterParams.searchKey === "Email") {
-      queryWithFilter = query.where(
-        like(users.email, `${filterParams.searchValue}%`),
-      );
+      filters.push(like(users.email, `${filterParams.searchValue}%`));
     }
   }
 
-  const data = await (queryWithFilter ? queryWithFilter : query)
+  const data = await query
+    .where(and(...filters))
     .limit(limit)
     .offset(offset)
     .catch((err) => {
@@ -61,13 +89,22 @@ export default async function Page({ searchParams }: ServerPageProps) {
         <div className="space-between flex w-full flex-row items-center">
           <div className="flex w-full flex-col gap-2">
             <h5 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
-              Users
+              Add Owner - {property.propertyCode || property.id}
             </h5>
 
             <Breadcrumb className="bg-gray-50 pb-3 dark:bg-gray-800">
               <BreadcrumbItem href="/">Home</BreadcrumbItem>
               <BreadcrumbItem href="/admin">Admin</BreadcrumbItem>
-              <BreadcrumbItem href="#">Users</BreadcrumbItem>
+              <BreadcrumbItem href="/admin/properties">
+                Properties
+              </BreadcrumbItem>
+              <BreadcrumbItem href={`/admin/properties/${idString}`}>
+                {property.propertyCode || property.id}
+              </BreadcrumbItem>
+              <BreadcrumbItem href={`/admin/properties/${idString}/owners`}>
+                Owners
+              </BreadcrumbItem>
+              <BreadcrumbItem href="#">Add Owner</BreadcrumbItem>
             </Breadcrumb>
           </div>
           <div className="flex flex-row items-center justify-end gap-5">
@@ -75,9 +112,6 @@ export default async function Page({ searchParams }: ServerPageProps) {
               searchKeys={searchbarKeys}
               defaultSearchKey={filterParams?.searchValue || "Name"}
             />
-            <Link href="/admin/users/create" className="cursor-pointer">
-              <Button>New</Button>
-            </Link>
           </div>
         </div>
 
@@ -113,14 +147,16 @@ export default async function Page({ searchParams }: ServerPageProps) {
                     {user.mobileNumber}
                   </TableCell>
                   <TableCell>
-                    <div className="flex flex-row items-center gap-3">
-                      <a href={`/admin/users/${user.id}`} className="w-fit">
-                        <div className="rounded-md bg-blue-600 p-1">
-                          <HiPencil size={20} className="text-white" />
-                        </div>
-                      </a>
-                      <DeleteUserButton id={user.id} />
-                    </div>
+                    {user.propertyId ? (
+                      <Button className="p-2" size="small" disabled>
+                        Already Owner
+                      </Button>
+                    ) : (
+                      <AddOwnerButton
+                        propertyId={property.id}
+                        userId={user.id}
+                      />
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

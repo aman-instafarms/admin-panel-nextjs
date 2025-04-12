@@ -1,53 +1,64 @@
 import { db } from "@/drizzle/db";
 import { userFields } from "@/drizzle/fields";
-import { users } from "@/drizzle/schema";
-import { parseFilterParams, parseLimitOffset } from "@/utils/server-utils";
+import { caretakersOnProperties, properties, users } from "@/drizzle/schema";
 import { ServerPageProps } from "@/utils/types";
+import { eq } from "drizzle-orm";
 import {
+  Card,
   Breadcrumb,
   BreadcrumbItem,
-  Card,
   Table,
+  TableHead,
+  TableRow,
+  TableHeadCell,
   TableBody,
   TableCell,
-  TableHead,
-  TableHeadCell,
-  TableRow,
   Button,
 } from "flowbite-react";
 import Link from "next/link";
-import { HiPencil } from "react-icons/hi";
-import DeleteUserButton from "./DeleteAdminButton";
-import Searchbar from "@/components/Searchbar";
-import { like } from "drizzle-orm/pg-core/expressions";
-import { sql } from "drizzle-orm";
+import React from "react";
 import Pagination from "@/components/Pagination";
+import { parseLimitOffset } from "@/utils/server-utils";
+import RemoveCaretakerButton from "./RemoveCaretakerButton";
 
-const searchbarKeys = ["Name", "Email"];
-
-export default async function Page({ searchParams }: ServerPageProps) {
+export default async function Page({ params, searchParams }: ServerPageProps) {
+  const { id } = await params;
   const { limit, offset } = parseLimitOffset(await searchParams);
-  const filterParams = parseFilterParams(await searchParams);
 
-  const query = db.select(userFields).from(users);
-
-  let queryWithFilter;
-  if (filterParams) {
-    if (filterParams.searchKey === "Name") {
-      queryWithFilter = query.where(
-        like(
-          sql`LOWER(COALESCE(${users.firstName}, '') || ' ' || COALESCE(${users.lastName}, ''))`,
-          `${filterParams.searchValue.toLowerCase()}%`,
-        ),
-      );
-    } else if (filterParams.searchKey === "Email") {
-      queryWithFilter = query.where(
-        like(users.email, `${filterParams.searchValue}%`),
-      );
-    }
+  let idString = "";
+  if (id === undefined) {
+    idString = "";
+  } else if (typeof id === "string") {
+    idString = id;
+  } else {
+    idString = id[0];
   }
 
-  const data = await (queryWithFilter ? queryWithFilter : query)
+  const property = await db
+    .select({
+      id: properties.id,
+      propertyCode: properties.propertyCode,
+      propertyName: properties.propertyName,
+    })
+    .from(properties)
+    .where(eq(properties.id, idString))
+    .limit(1)
+    .then((res) => {
+      if (res.length === 0) {
+        throw new Error("Not Found");
+      }
+      return res[0];
+    })
+    .catch((err) => {
+      console.log("DB Error: ", err);
+      throw new Error("Database Error");
+    });
+
+  const data = await db
+    .select({ ...userFields, id: caretakersOnProperties.caretakerId })
+    .from(caretakersOnProperties)
+    .leftJoin(users, eq(caretakersOnProperties.caretakerId, users.id))
+    .where(eq(caretakersOnProperties.propertyId, idString))
     .limit(limit)
     .offset(offset)
     .catch((err) => {
@@ -61,27 +72,34 @@ export default async function Page({ searchParams }: ServerPageProps) {
         <div className="space-between flex w-full flex-row items-center">
           <div className="flex w-full flex-col gap-2">
             <h5 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
-              Users
+              Caretakers - {property.propertyName}
             </h5>
 
             <Breadcrumb className="bg-gray-50 pb-3 dark:bg-gray-800">
               <BreadcrumbItem href="/">Home</BreadcrumbItem>
               <BreadcrumbItem href="/admin">Admin</BreadcrumbItem>
-              <BreadcrumbItem href="#">Users</BreadcrumbItem>
+              <BreadcrumbItem href="/admin/properties">
+                Properties
+              </BreadcrumbItem>
+              <BreadcrumbItem href={`/admin/properties/${idString}`}>
+                {property.propertyCode || property.id}
+              </BreadcrumbItem>
+              <BreadcrumbItem href="#">Caretakers</BreadcrumbItem>
             </Breadcrumb>
           </div>
-          <div className="flex flex-row items-center justify-end gap-5">
-            <Searchbar
-              searchKeys={searchbarKeys}
-              defaultSearchKey={filterParams?.searchValue || "Name"}
-            />
-            <Link href="/admin/users/create" className="cursor-pointer">
-              <Button>New</Button>
+          <div className="flex">
+            <Link
+              href={`/admin/properties/${idString}/caretakers/new`}
+              className="cursor-pointer"
+            >
+              <Button className="min-w-36">
+                <span>Add Caretaker</span>
+              </Button>
             </Link>
           </div>
         </div>
 
-        <div className="mx-auto table-auto overflow-x-auto rounded-xl bg-gray-900 p-5">
+        <div className="mx-auto w-[900px] overflow-x-auto rounded-xl bg-gray-900 p-5">
           <Table>
             <TableHead>
               <TableRow>
@@ -114,12 +132,10 @@ export default async function Page({ searchParams }: ServerPageProps) {
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-row items-center gap-3">
-                      <a href={`/admin/users/${user.id}`} className="w-fit">
-                        <div className="rounded-md bg-blue-600 p-1">
-                          <HiPencil size={20} className="text-white" />
-                        </div>
-                      </a>
-                      <DeleteUserButton id={user.id} />
+                      <RemoveCaretakerButton
+                        propertyId={property.id}
+                        userId={user.id}
+                      />
                     </div>
                   </TableCell>
                 </TableRow>

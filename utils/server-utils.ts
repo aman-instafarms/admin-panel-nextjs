@@ -5,6 +5,7 @@ import {
   AdminData,
   AmenityData,
   DefaultPricing,
+  Owner,
   UserData,
 } from "./types";
 import { DateTime } from "luxon";
@@ -22,6 +23,21 @@ export function uniqueStringFilter(data: string[]): string[] {
     }
   });
   return res;
+}
+
+export function parseFilterParams(searchParams: {
+  [key: string]: string | string[] | undefined;
+}): { searchKey: string; searchValue: string } | null {
+  const { searchKey, searchValue } = searchParams;
+  if (
+    typeof searchKey === "string" &&
+    typeof searchValue === "string" &&
+    searchKey.length > 0 &&
+    searchValue.length > 0
+  ) {
+    return { searchKey, searchValue };
+  }
+  return null;
 }
 
 export function parseLimitOffset(searchParams: {
@@ -495,7 +511,21 @@ export function parseUserFormData(formData: FormData): UserData {
     lastName: parseString(formData.get("lastName")?.toString()),
     mobileNumber: parseString(formData.get("mobileNumber")?.toString()),
     whatsappNumber: parseString(formData.get("whatsappNumber")?.toString()),
-    email,
+    email: email.toLowerCase(),
     role,
   };
+}
+
+export function parseOwnerFormData(formData: FormData): Owner {
+  const propertyId = parseString(formData.get("propertyId")?.toString());
+  const ownerId = parseString(formData.get("ownerId")?.toString());
+
+  if (!propertyId || propertyId.length === 0) {
+    throw new Error("Invalid Property.");
+  }
+  if (!ownerId || ownerId.length == 0) {
+    throw new Error("Invalid User.");
+  }
+
+  return { propertyId, ownerId };
 }

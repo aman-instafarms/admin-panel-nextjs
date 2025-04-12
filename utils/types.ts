@@ -258,3 +258,17 @@ export interface Activity {
   id: string;
   activity: string;
 }
+export interface Owner {
+  propertyId: string;
+  ownerId: string;
+}
+
+export interface Manager {
+  propertyId: string;
+  managerId: string;
+}
+
+export interface Caretaker {
+  propertyId: string;
+  caretakerId: string;
+}

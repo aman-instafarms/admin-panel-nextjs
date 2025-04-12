@@ -18,6 +18,7 @@ import {
 import Link from "next/link";
 import { HiPencil } from "react-icons/hi";
 import DeleteStateButton from "./DeleteStateButton";
+import Pagination from "@/components/Pagination";
 
 export default async function Page({ searchParams }: ServerPageProps) {
   const { limit, offset } = parseLimitOffset(await searchParams);
@@ -87,6 +88,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
           </Table>
         </div>
       </Card>
+      <Pagination />
     </div>
   );
 }
