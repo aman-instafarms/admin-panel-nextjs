@@ -1,10 +1,10 @@
 import { Breadcrumb, BreadcrumbItem, Card } from "flowbite-react";
 import { ServerPageProps } from "@/utils/types";
 import { db } from "@/drizzle/db";
-import { userFields } from "@/drizzle/fields";
-import { users } from "@/drizzle/schema";
+import { customerFields } from "@/drizzle/fields";
+import { customers } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
-import UserEditor from "./UserEditor";
+import CustomerEditor from "./CustomerEditor";
 
 export default async function Page({ params }: ServerPageProps) {
   const { id } = await params;
@@ -18,9 +18,9 @@ export default async function Page({ params }: ServerPageProps) {
     idString = id[0];
   }
   const data = await db
-    .select(userFields)
-    .from(users)
-    .where(eq(users.id, idString))
+    .select(customerFields)
+    .from(customers)
+    .where(eq(customers.id, idString))
     .catch((err) => {
       console.log("DB Error: ", err);
       throw new Error("Database Error");
@@ -32,25 +32,25 @@ export default async function Page({ params }: ServerPageProps) {
 
   return (
     <div className="flex w-full flex-col">
-      <Card className="w-full bg-white">
+      <Card className="w-full">
         <div className="flex flex-col gap-2">
           <h5 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
-            Users
+            Customers
           </h5>
 
-          <Breadcrumb className="bg-gray-50 pb-3 dark:bg-gray-800">
+          <Breadcrumb className="pb-3 dark:bg-gray-800">
             <BreadcrumbItem href="/">Home</BreadcrumbItem>
             <BreadcrumbItem href="/admin">Admin</BreadcrumbItem>
-            <BreadcrumbItem href="/admin/users">Users</BreadcrumbItem>
+            <BreadcrumbItem href="/admin/customers">Customers</BreadcrumbItem>
             <BreadcrumbItem href="#">Edit</BreadcrumbItem>
           </Breadcrumb>
         </div>
 
-        <div className="mx-auto flex w-[900px] flex-col gap-5 overflow-x-auto rounded-xl bg-gray-900 p-5">
+        <div className="mx-auto flex w-[900px] flex-col gap-5 rounded-xl bg-gray-900 p-5">
           <h6 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white">
-            Edit Users
+            Edit Customer
           </h6>
-          <UserEditor data={data[0]} />
+          <CustomerEditor data={data[0]} />
         </div>
       </Card>
     </div>

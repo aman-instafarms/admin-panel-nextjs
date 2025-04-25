@@ -1,9 +1,12 @@
 import "server-only";
 import {
+  _BookingData,
+  _CancellationData,
   _PropertyData,
   ActivityData,
   AdminData,
   AmenityData,
+  CustomerData,
   DefaultPricing,
   Owner,
   UserData,
@@ -11,7 +14,13 @@ import {
 import { DateTime } from "luxon";
 import { v4 } from "uuid";
 import { SpecialDateData } from "@/actions/propertyActions";
-import { rolesEnum } from "@/drizzle/schema";
+import {
+  bookingTypeEnum,
+  cancellationTypeEnum,
+  genderEnum,
+  refundStatusEnum,
+  rolesEnum,
+} from "@/drizzle/schema";
 
 export function uniqueStringFilter(data: string[]): string[] {
   const set = new Set<string>();
@@ -88,19 +97,13 @@ export function parseNumber(str: string | undefined): number | null {
   return num;
 }
 
-export function parseDate(str: string | undefined): Date | null {
-  if (!str || str.length === 0) {
-    return null;
-  } else {
-    const dt = DateTime.fromFormat(str, "LLLL d, yyyy").setZone("UTC", {
-      keepLocalTime: true,
-    });
-    if (dt.isValid) {
-      return dt.toJSDate();
-    } else {
-      return null;
-    }
+export function validateDateStr(dateStr: string | undefined): string | null {
+  if (!dateStr) return null;
+  const dt = DateTime.fromISO(dateStr);
+  if (dt.isValid) {
+    return dt.toSQL();
   }
+  return null;
 }
 
 export function validatePricing(data: DefaultPricing) {
@@ -140,6 +143,13 @@ export function validatePropertyData(data: _PropertyData): string | null {
   // Checks
   if (!data.propertyName || data.propertyName.length === 0) {
     return "Invalid Property Name.";
+  }
+  if (!data.checkinTime || data.checkinTime.length === 0) {
+    return "Invalid Checkin time.";
+  }
+
+  if (!data.checkoutTime || data.checkoutTime.length === 0) {
+    return "Invalid Checkout time.";
   }
   // Checking for repeated amenities
   if (data.amenities) {
@@ -190,14 +200,9 @@ export function parseSpecialDates(formData: FormData): {
         return { error: "Repeated dates are not allowed." };
       }
 
-      const date = parseDate(uniqueString);
-      if (!date) {
-        return { error: "Invalid date." };
-      }
-
       const data: SpecialDateData = {
         id: v4(),
-        date: date,
+        date: dateStr,
         price: parseNumber(formData.get(`special-price-${uuid}`)?.toString()),
         adultExtraGuestCharge: parseNumber(
           formData.get(`special-adultExtraGuestCharge-${uuid}`)?.toString(),
@@ -471,6 +476,8 @@ export function parsePropertyFormData(formData: FormData): _PropertyData {
     defaultGstPercentage: parseNumber(
       formData.get("defaultGstPercentage")?.toString(),
     ),
+    checkinTime: parseString(formData.get("checkinTime")?.toString()),
+    checkoutTime: parseString(formData.get("checkoutTime")?.toString()),
 
     latitude: parseString(formData.get("latitude")?.toString()),
     longtitude: parseString(formData.get("longtitude")?.toString()),
@@ -513,6 +520,223 @@ export function parseUserFormData(formData: FormData): UserData {
     whatsappNumber: parseString(formData.get("whatsappNumber")?.toString()),
     email: email.toLowerCase(),
     role,
+  };
+}
+
+export function parseCancellationFormData(
+  formData: FormData,
+): _CancellationData {
+  const bookingId = parseString(formData.get("bookingId")?.toString());
+  const refundAmount = parseNumber(formData.get("refundAmount")?.toString());
+  const refundStatus = refundStatusEnum.enumValues.find(
+    (x) => x === formData.get("refundStatus")?.toString(),
+  );
+  const cancellationType = cancellationTypeEnum.enumValues.find(
+    (x) => x === formData.get("cancellationType")?.toString(),
+  );
+  const referencePersonId = parseString(
+    formData.get("referencePersonId")?.toString(),
+  );
+  const referencePersonRole = rolesEnum.enumValues.find(
+    (x) => x === formData.get("referencePersonRole")?.toString(),
+  );
+
+  if (!bookingId) {
+    throw new Error("Invalid booking id");
+  }
+  if (!refundAmount) {
+    throw new Error("Invalid Refund Amount");
+  }
+  if (!refundStatus) {
+    throw new Error("Invalid Refund Status");
+  }
+  if (!cancellationType) {
+    throw new Error("Invalid Cancellation type.");
+  }
+  if (!referencePersonId) {
+    throw new Error("No reference person selected");
+  }
+  if (!referencePersonRole) {
+    throw new Error("Select reference person role");
+  }
+
+  return {
+    bookingId,
+    refundAmount,
+    refundStatus,
+    cancellationType,
+    referencePersonId,
+    referencePersonRole,
+  };
+}
+
+export function parseBookingFormData(formData: FormData): _BookingData {
+  const propertyId = parseString(formData.get("propertyId")?.toString());
+  const bookingType = bookingTypeEnum.enumValues.find(
+    (x) => x === parseString(formData.get("bookingType")?.toString()),
+  );
+  const customerId = parseString(formData.get("customerId")?.toString());
+  const adultCount = parseNumber(formData.get("adultCount")?.toString());
+  const childrenCount = parseNumber(formData.get("childrenCount")?.toString());
+  const infantCount = parseNumber(formData.get("infantCount")?.toString());
+  const checkinDate = validateDateStr(formData.get("checkinDate")?.toString());
+  const checkoutDate = validateDateStr(
+    formData.get("checkoutDate")?.toString(),
+  );
+  const bookingCreatorId = parseString(
+    formData.get("bookingCreatorId")?.toString(),
+  );
+  const bookingCreatorRole = rolesEnum.enumValues.find(
+    (x) => x === parseString(formData.get("bookingCreatorRole")?.toString()),
+  );
+  const rentalCharge = parseNumber(formData.get("rentalCharge")?.toString());
+  const extraGuestCharge = parseNumber(
+    formData.get("extraGuestCharge")?.toString(),
+  );
+  const ownerDiscount = parseNumber(formData.get("ownerDiscount")?.toString());
+  const multipleNightsDiscount = parseNumber(
+    formData.get("multipleNightsDiscount")?.toString(),
+  );
+  const couponDiscount = parseNumber(
+    formData.get("couponDiscount")?.toString(),
+  );
+  const totalDiscount = parseNumber(formData.get("totalDiscount")?.toString());
+  const gstAmount = parseNumber(formData.get("gstAmount")?.toString());
+  const gstPercentage = parseNumber(formData.get("gstPercentage")?.toString());
+  const otaCommission = parseNumber(formData.get("otaCommission")?.toString());
+  const paymentGatewayCharge = parseNumber(
+    formData.get("paymentGatewayCharge")?.toString(),
+  );
+  const netOwnerRevenue = parseNumber(
+    formData.get("netOwnerRevenue")?.toString(),
+  );
+
+  if (!propertyId || propertyId.length === 0) {
+    throw new Error("No property selected");
+  }
+  if (!customerId || customerId.length === 0) {
+    throw new Error("No customer selected");
+  }
+  if (!bookingType) {
+    throw new Error("Invalid Booking type");
+  }
+  if (!adultCount) {
+    throw new Error("Enter number of adults");
+  }
+  if (!childrenCount) {
+    throw new Error("Enter number of children");
+  }
+  if (!infantCount) {
+    throw new Error("Enter number of infants");
+  }
+  if (!checkinDate) {
+    throw new Error("Invalid checkin date");
+  }
+  if (!checkoutDate) {
+    throw new Error("Invalid checkout date");
+  }
+  if (!bookingCreatorId) {
+    throw new Error("No booking creator selected.");
+  }
+  if (!bookingCreatorRole) {
+    throw new Error("Invalid booking creator role");
+  }
+  if (!rentalCharge) {
+    throw new Error("Enter Rental Charge");
+  }
+  if (!extraGuestCharge) {
+    throw new Error("Enter Rental Charge");
+  }
+  if (!ownerDiscount) {
+    throw new Error("Enter Rental Charge");
+  }
+  if (!multipleNightsDiscount) {
+    throw new Error("Enter Rental Charge");
+  }
+  if (!couponDiscount) {
+    throw new Error("Enter Rental Charge");
+  }
+  if (!totalDiscount) {
+    throw new Error("Enter Rental Charge");
+  }
+  if (!gstAmount) {
+    throw new Error("Enter Rental Charge");
+  }
+  if (!gstPercentage) {
+    throw new Error("Enter Rental Charge");
+  }
+  if (!otaCommission) {
+    throw new Error("Enter Rental Charge");
+  }
+  if (!paymentGatewayCharge) {
+    throw new Error("Enter Rental Charge");
+  }
+  if (!netOwnerRevenue) {
+    throw new Error("Enter Rental Charge");
+  }
+
+  return {
+    id: v4(),
+    bookingType,
+    propertyId,
+    customerId,
+    bookingSource: parseString(formData.get("propertyId")?.toString()),
+    adultCount,
+    childrenCount,
+    infantCount,
+    checkinDate,
+    checkoutDate,
+    bookingCreatorId,
+    bookingCreatorRole,
+    bookingRemarks: parseString(formData.get("bookingRemarks")?.toString()),
+    specialRequests: parseString(formData.get("specialRequests")?.toString()),
+    rentalCharge,
+    extraGuestCharge,
+    ownerDiscount,
+    multipleNightsDiscount,
+    couponDiscount,
+    totalDiscount,
+    gstAmount,
+    gstPercentage,
+    otaCommission,
+    paymentGatewayCharge,
+    netOwnerRevenue,
+  };
+}
+
+export function parseCustomerFormData(formData: FormData): CustomerData {
+  const firstName = parseString(formData.get("firstName")?.toString());
+  const mobileNumber = parseString(formData.get("mobileNumber")?.toString());
+  const dob = parseString(formData.get("dob")?.toString());
+  const gender = genderEnum.enumValues.find(
+    (x) => x === parseString(formData.get("gender")?.toString()),
+  );
+  let email = parseString(formData.get("email")?.toString());
+
+  if (!firstName) {
+    throw new Error("Name missing.");
+  }
+  if (!gender) {
+    throw new Error("Gender missing.");
+  }
+  if (!dob) {
+    throw new Error("Date of birth missing.");
+  }
+  if (!mobileNumber) {
+    throw new Error("Mobile Number missing.");
+  }
+  if (email) {
+    email = email.toLowerCase();
+  }
+
+  return {
+    id: v4(),
+    firstName,
+    lastName: parseString(formData.get("lastName")?.toString()),
+    mobileNumber,
+    dob,
+    email,
+    gender,
   };
 }
 

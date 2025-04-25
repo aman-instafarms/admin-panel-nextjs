@@ -8,6 +8,7 @@ import {
 import AreaSelector from "@/components/AreaSelector";
 import LabelWrapper from "@/components/LabelWrapper";
 import MyButton from "@/components/MyButton";
+import TimeSelector from "@/components/TimeSelector";
 import {
   _AreaData,
   _CityData,
@@ -49,7 +50,7 @@ interface PropertyEditorProps {
 
 const createNewSpecialDate = (): SpecialDateData => ({
   id: v4(),
-  date: new Date(),
+  date: DateTime.now().toFormat("yyyy-LL-dd"),
   price: null,
   adultExtraGuestCharge: null,
   childExtraGuestCharge: null,
@@ -78,6 +79,8 @@ export default function PropertyEditor(props: PropertyEditorProps) {
   const [loading, startTransition] = useTransition();
 
   const [daywisePrice, setDaywisePrice] = useState<boolean>(false);
+  const [checkinTime, setCheckinTime] = useState<string | null>(null);
+  const [checkoutTime, setCheckoutTime] = useState<string | null>(null);
   const [specialDateData, setSpecialDateData] = useState<SpecialDateData[]>(
     props.specialDatesData?.length ? props.specialDatesData : [],
   );
@@ -121,6 +124,8 @@ export default function PropertyEditor(props: PropertyEditorProps) {
     event.preventDefault();
     const formData = new FormData(event.target as HTMLFormElement);
     formData.set("daywisePrice", daywisePrice ? "true" : "false");
+    formData.set("checkinTime", checkinTime ? checkinTime : "");
+    formData.set("checkoutTime", checkoutTime ? checkoutTime : "");
     startTransition(() => {
       let promise: Promise<string>;
       if (props.data) {
@@ -390,6 +395,12 @@ export default function PropertyEditor(props: PropertyEditorProps) {
                 </Select>
               </LabelWrapper>
             </div>
+            <LabelWrapper label="Check-in Time [HH:MM]">
+              <TimeSelector timestamp={checkinTime} update={setCheckinTime} />
+            </LabelWrapper>
+            <LabelWrapper label="Check-out Time [HH:MM]">
+              <TimeSelector timestamp={checkoutTime} update={setCheckoutTime} />
+            </LabelWrapper>
           </div>
         </TabItem>
         <TabItem title="Day wise Variables">
@@ -767,16 +778,7 @@ function SpecialDateRow({
   addSpecialDate: () => void;
   removeSpecialDate: () => void;
 }) {
-  const dt = DateTime.fromJSDate(data.date)
-    .toUTC()
-    .setZone("local", { keepLocalTime: true })
-    .toJSDate();
-
-  const setZoneToUTC = (d: Date) => {
-    return DateTime.fromJSDate(d)
-      .setZone("UTC", { keepLocalTime: true })
-      .toJSDate();
-  };
+  const dt = DateTime.fromFormat(data.date, "yyyy-LL-dd").toJSDate();
 
   useEffect(() => {
     let el: HTMLInputElement;
@@ -826,7 +828,13 @@ function SpecialDateRow({
           id={`special-date-${data.id}`}
           name={`special-date-${data.id}`}
           value={dt}
-          onChange={(d) => d && setData({ ...data, date: setZoneToUTC(d) })}
+          onChange={(d) =>
+            d &&
+            setData({
+              ...data,
+              date: DateTime.fromJSDate(d).toFormat("yyyy-LL-dd"),
+            })
+          }
         />
       </td>
       <td className="justify-center align-middle">

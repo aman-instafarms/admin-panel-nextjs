@@ -1,7 +1,19 @@
-import { rolesEnum } from "@/drizzle/schema";
+import {
+  bookingTypeEnum,
+  cancellationTypeEnum,
+  genderEnum,
+  refundStatusEnum,
+  rolesEnum,
+} from "@/drizzle/schema";
 
 export interface ServerActionResult {
   success?: string;
+  error?: string;
+  status?: number;
+}
+
+export interface ServerSearchResult<T> {
+  data?: T;
   error?: string;
   status?: number;
 }
@@ -175,6 +187,8 @@ export interface _PropertyData {
   // booking defaults
   bookingType: string | null;
   defaultGstPercentage: number | null;
+  checkinTime: string | null;
+  checkoutTime: string | null;
 
   // location
   latitude: string | null;
@@ -231,6 +245,85 @@ export interface UserData {
   whatsappNumber: string | null;
   email: string;
   role: UserRole;
+}
+
+export type Gender = (typeof genderEnum.enumValues)[number];
+
+export type RefundStatus = (typeof refundStatusEnum.enumValues)[number];
+export type CancellationType = (typeof cancellationTypeEnum.enumValues)[number];
+export type BookingType = (typeof bookingTypeEnum.enumValues)[number];
+
+export interface _BookingData {
+  id: string;
+  propertyId: string;
+  customerId: string;
+  bookingType: BookingType;
+  bookingSource: string | null;
+  adultCount: number;
+  childrenCount: number;
+  infantCount: number;
+  checkinDate: string;
+  checkoutDate: string;
+  bookingCreatorId: string;
+  bookingCreatorRole: UserRole;
+  bookingRemarks: string | null;
+  specialRequests: string | null;
+
+  rentalCharge: number;
+  extraGuestCharge: number;
+  ownerDiscount: number;
+  multipleNightsDiscount: number;
+  couponDiscount: number;
+  totalDiscount: number;
+  gstAmount: number;
+  gstPercentage: number;
+  otaCommission: number;
+  paymentGatewayCharge: number;
+  netOwnerRevenue: number;
+}
+
+export interface BookingData extends _BookingData {
+  property: {
+    id: string | null;
+    propertyName: string | null;
+    propertyCode: string | null;
+
+    bedroomCount: number | null;
+    bathroomCount: number | null;
+    doubleBedCount: number | null;
+    singleBedCount: number | null;
+    mattressCount: number | null;
+    baseGuestCount: number | null;
+    maxGuestCount: number | null;
+    defaultGstPercentage: number | null;
+    checkinTime: string | null;
+    checkoutTime: string | null;
+  } | null;
+  cancellation: _CancellationData | null;
+  customer: CustomerData | null;
+}
+
+export interface _CancellationData {
+  bookingId: string;
+  refundAmount: number;
+  refundStatus: RefundStatus;
+  cancellationType: CancellationType;
+  referencePersonId: string;
+  referencePersonRole: UserRole;
+}
+
+export interface CancellationData {
+  referencePerson: UserData;
+}
+
+export interface CustomerData {
+  id: string;
+  firstName: string;
+  lastName: string | null;
+  email: string | null;
+  dob: string;
+  mobileNumber: string;
+  gender: Gender;
 }
 
 export interface AmenityData {

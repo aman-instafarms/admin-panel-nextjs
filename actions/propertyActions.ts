@@ -1,20 +1,25 @@
 "use server";
 
 import { db } from "@/drizzle/db";
-import { eq } from "drizzle-orm";
+import { eq, like, sql } from "drizzle-orm";
 import { properties, propertyTypes, specialDates } from "@/drizzle/schema";
 import { revalidatePath } from "next/cache";
-import { _PropertyData, ServerActionResult } from "@/utils/types";
+import {
+  _PropertyData,
+  ServerActionResult,
+  ServerSearchResult,
+} from "@/utils/types";
 import {
   parsePropertyFormData,
   parseSpecialDates,
+  parseString,
   validatePropertyData,
 } from "@/utils/server-utils";
 import { _propertyFields } from "@/drizzle/fields";
 
 export interface SpecialDateData {
   id: string;
-  date: Date;
+  date: string;
   price: number | null;
   adultExtraGuestCharge: number | null;
   childExtraGuestCharge: number | null;
@@ -124,5 +129,69 @@ export const deleteProperty = async (
     .catch((err) => {
       console.log("DB Error: ", err);
       throw new Error("Database error.");
+    });
+};
+
+export const getPropertyById = async (
+  id: string,
+): Promise<ServerSearchResult<_PropertyData>> => {
+  return await db
+    .select(_propertyFields)
+    .from(properties)
+    .where(eq(properties.id, id))
+    .then((res) => {
+      if (res.length === 0) {
+        throw new Error("Property not found");
+      }
+      return { data: res[0] };
+    })
+    .catch((err) => {
+      console.log("DB Error: ", err);
+      throw new Error("Database error");
+    });
+};
+
+export const searchProperty = async (
+  formData: FormData,
+): Promise<ServerSearchResult<_PropertyData[]>> => {
+  const searchKeys = ["Property Name", "Property Code"] as const;
+  const searchKey = searchKeys.find(
+    (x) => x === formData.get("searchKey")?.toString(),
+  );
+  const searchValue = parseString(formData.get("searchValue")?.toString());
+
+  if (!searchValue) {
+    return { data: [] };
+  }
+
+  const query = db.select(_propertyFields).from(properties);
+  let queryWithFilter;
+
+  if (!searchKey) {
+    throw new Error("Invalid search key.");
+  } else if (searchKey === "Property Name") {
+    queryWithFilter = query.where(
+      like(
+        sql`LOWER(COALESCE(${properties.propertyName}, ''))`,
+        `${searchValue.toLowerCase()}%`,
+      ),
+    );
+  } else if (searchKey === "Property Code") {
+    queryWithFilter = query.where(
+      like(
+        sql`LOWER(COALESCE(${properties.propertyCode}, ''))`,
+        `${searchValue.toLowerCase()}%`,
+      ),
+    );
+  }
+
+  return await (queryWithFilter ? queryWithFilter : query)
+    .limit(5)
+    .then((res) => {
+      return { data: res };
+    })
+    .catch((err) => {
+      console.log("DB Error: ", err);
+      return { error: "Database error" };
     });
 };

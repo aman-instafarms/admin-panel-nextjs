@@ -3,7 +3,10 @@ import {
   admins,
   amenities,
   areas,
+  bookings,
+  cancellations,
   cities,
+  customers,
   properties,
   propertyTypes,
   specialDates,
@@ -17,11 +20,6 @@ export const propertyTypeFields = {
 };
 
 export const _propertyFields = {
-  id: properties.id,
-  propertyName: properties.propertyName,
-};
-
-export const propertyFields = {
   id: properties.id,
   propertyName: properties.propertyName,
   propertyCode: properties.propertyCode,
@@ -110,11 +108,27 @@ export const propertyFields = {
   maxGuestCount: properties.maxGuestCount,
   bookingType: properties.bookingType,
   defaultGstPercentage: properties.defaultGstPercentage,
+  checkinTime: properties.checkinTime,
+  checkoutTime: properties.checkoutTime,
+
   latitude: properties.latitude,
   longtitude: properties.longtitude,
   mapLink: properties.mapLink,
 
   address: properties.address,
+  pincode: properties.pincode,
+  propertyTypeId: properties.propertyTypeId,
+
+  // json data
+  amenities: properties.amenities,
+  activities: properties.activities,
+  areaId: properties.areaId,
+  cityId: properties.cityId,
+  stateId: properties.stateId,
+};
+
+export const propertyFields = {
+  ..._propertyFields,
   area: {
     id: areas.id,
     area: areas.area,
@@ -127,12 +141,6 @@ export const propertyFields = {
     id: states.id,
     state: states.state,
   },
-  pincode: properties.pincode,
-  propertyTypeId: properties.propertyTypeId,
-
-  // json data
-  amenities: properties.amenities,
-  activities: properties.activities,
 };
 
 export const stateFields = {
@@ -212,4 +220,89 @@ export const userFields = {
   mobileNumber: users.mobileNumber,
   whatsappNumber: users.whatsappNumber,
   role: users.role,
+};
+
+export const customerFields = {
+  id: customers.id,
+  firstName: customers.firstName,
+  lastName: customers.lastName,
+  email: customers.email,
+  dob: customers.dob,
+  mobileNumber: customers.mobileNumber,
+  gender: customers.gender,
+};
+
+export const _bookingFields = {
+  id: bookings.id,
+  propertyId: bookings.propertyId,
+  customerId: bookings.customerId,
+  bookingType: bookings.bookingType,
+  bookingSource: bookings.bookingSource,
+  adultCount: bookings.adultCount,
+  childrenCount: bookings.childrenCount,
+  infantCount: bookings.infantCount,
+  checkinDate: bookings.checkinDate,
+  checkoutDate: bookings.checkoutDate,
+  bookingCreatorId: bookings.bookingCreatorId,
+  bookingCreatorRole: bookings.bookingCreatorRole,
+  bookingRemarks: bookings.bookingRemarks,
+  specialRequests: bookings.specialRequests,
+
+  rentalCharge: bookings.rentalCharge,
+  extraGuestCharge: bookings.extraGuestCharge,
+  ownerDiscount: bookings.ownerDiscount,
+  multipleNightsDiscount: bookings.multipleNightsDiscount,
+  couponDiscount: bookings.couponDiscount,
+  totalDiscount: bookings.totalDiscount,
+  gstAmount: bookings.gstAmount,
+  gstPercentage: bookings.gstPercentage,
+  otaCommission: bookings.otaCommission,
+  paymentGatewayCharge: bookings.paymentGatewayCharge,
+  netOwnerRevenue: bookings.netOwnerRevenue,
+};
+
+export const bookingFields = {
+  ..._bookingFields,
+  property: {
+    id: properties.id,
+    propertyName: properties.propertyName,
+    propertyCode: properties.propertyCode,
+
+    bedroomCount: properties.bedroomCount,
+    bathroomCount: properties.bathroomCount,
+    doubleBedCount: properties.doubleBedCount,
+    singleBedCount: properties.singleBedCount,
+    mattressCount: properties.mattressCount,
+    baseGuestCount: properties.baseGuestCount,
+    maxGuestCount: properties.maxGuestCount,
+    defaultGstPercentage: properties.defaultGstPercentage,
+    checkinTime: properties.checkinTime,
+    checkoutTime: properties.checkoutTime,
+  },
+  // cancellationReferencePerson: {
+  //   id: users.id,
+  //   firstName: users.firstName,
+  //   lastName: users.lastName,
+  //   email: users.email,
+  //   mobileNumber: users.mobileNumber,
+  //   whatsappNumber: users.whatsappNumber,
+  //   role: users.role,
+  // },
+  cancellation: {
+    bookingId: cancellations.bookingId,
+    refundAmount: cancellations.refundAmount,
+    refundStatus: cancellations.refundStatus,
+    cancellationType: cancellations.cancellationType,
+    referencePersonId: cancellations.referencePersonId,
+    referencePersonRole: cancellations.referencePersonRole,
+  },
+  customer: {
+    id: customers.id,
+    firstName: customers.firstName,
+    lastName: customers.lastName,
+    email: customers.email,
+    dob: customers.dob,
+    mobileNumber: customers.mobileNumber,
+    gender: customers.gender,
+  },
 };

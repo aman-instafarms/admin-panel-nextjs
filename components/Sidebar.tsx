@@ -17,7 +17,7 @@ import {
 
 export default function AdminSidebar() {
   return (
-    <Sidebar className="m-3 h-full">
+    <Sidebar className="m-3 h-full w-78">
       <SidebarItems>
         <SidebarItemGroup>
           <SidebarItem href="/admin/admins" icon={HiInformationCircle}>
@@ -25,6 +25,9 @@ export default function AdminSidebar() {
           </SidebarItem>
           <SidebarItem href="/admin/users" icon={HiInformationCircle}>
             Users
+          </SidebarItem>
+          <SidebarItem href="/admin/customers" icon={HiCalendar}>
+            Customers
           </SidebarItem>
           <SidebarItem href="/admin/properties" icon={HiOfficeBuilding}>
             Properties

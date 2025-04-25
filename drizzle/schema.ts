@@ -10,6 +10,8 @@ import {
   date,
   json,
   uniqueIndex,
+  timestamp,
+  foreignKey,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
 import { ActivityData, AmenityData } from "@/utils/types";
@@ -237,6 +239,8 @@ export const properties = pgTable("properties", {
 
   bookingType: text("bookingType"),
   defaultGstPercentage: integer("defaultGstPercentage"),
+  checkinTime: timestamp({ withTimezone: true, mode: "string" }),
+  checkoutTime: timestamp({ withTimezone: true, mode: "string" }),
 
   latitude: text("latitude"),
   longtitude: text("longtitude"),
@@ -325,7 +329,7 @@ export const specialDates = pgTable("specialDates", {
   propertyId: uuid("propertyId")
     .notNull()
     .references(() => properties.id),
-  date: date({ mode: "date" }).notNull(),
+  date: date({ mode: "string" }).notNull(),
   price: integer("price"),
   adultExtraGuestCharge: integer("adultExtraGuestCharge"),
   childExtraGuestCharge: integer("childExtraGuestCharge"),
@@ -347,4 +351,132 @@ export const admins = pgTable("admins", {
   lastName: text(),
   email: text().notNull(),
   phoneNumber: text(),
+});
+
+export const genderEnum = pgEnum("gender", ["Male", "Female"]);
+
+export const customers = pgTable("customers", {
+  id: uuid().primaryKey().defaultRandom(),
+  firstName: text().notNull(),
+  lastName: text(),
+  email: text(),
+  dob: date({ mode: "string" }).notNull(),
+  mobileNumber: text().notNull(),
+  gender: genderEnum("gender").notNull(),
+});
+
+export const refundStatusEnum = pgEnum("refundStatusEnum", [
+  "Pending",
+  "Completed",
+]);
+export const cancellationTypeEnum = pgEnum("cancellationTypeEnum", [
+  "Online",
+  "Offline",
+]);
+
+export const cancellations = pgTable(
+  "cancellations",
+  {
+    bookingId: uuid()
+      .primaryKey()
+      .references(() => bookings.id),
+    refundAmount: integer().notNull(),
+    refundStatus: refundStatusEnum().notNull(),
+    cancellationType: cancellationTypeEnum().notNull(),
+    referencePersonId: uuid().notNull(),
+    referencePersonRole: rolesEnum().notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.referencePersonId, table.referencePersonRole],
+      foreignColumns: [users.id, users.role],
+    }),
+  ],
+);
+
+export const bookingTypeEnum = pgEnum("bookingType", ["Online", "Offline"]);
+
+export const bookings = pgTable(
+  "bookings",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    propertyId: uuid()
+      .notNull()
+      .references(() => properties.id),
+    customerId: uuid()
+      .notNull()
+      .references(() => customers.id),
+    bookingType: bookingTypeEnum("bookingType").notNull(),
+    bookingSource: text(),
+    adultCount: integer().notNull(),
+    childrenCount: integer().notNull(),
+    infantCount: integer().notNull(),
+    checkinDate: date({ mode: "string" }).notNull(),
+    checkoutDate: date({ mode: "string" }).notNull(),
+    bookingCreatorId: uuid().notNull(),
+    bookingCreatorRole: rolesEnum().notNull(),
+    bookingRemarks: text(),
+    specialRequests: text(),
+
+    // commercial data
+    rentalCharge: integer().notNull(),
+    extraGuestCharge: integer().notNull(),
+    ownerDiscount: integer().notNull(),
+    multipleNightsDiscount: integer().notNull(),
+    couponDiscount: integer().notNull(),
+    totalDiscount: integer().notNull(),
+    gstAmount: integer().notNull(),
+    gstPercentage: integer().notNull(),
+    otaCommission: integer().notNull(),
+    paymentGatewayCharge: integer().notNull(),
+    netOwnerRevenue: integer().notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.bookingCreatorId, table.bookingCreatorRole],
+      foreignColumns: [users.id, users.role],
+    }),
+  ],
+);
+
+export const transactionTypeEnum = pgEnum("transactionTypeEnum", [
+  "Credit",
+  "Debit",
+]);
+export const paymentTypeEnum = pgEnum("paymentTypeEnum", [
+  "Security Deposit",
+  "Rent",
+]);
+export const paymentModeEnum = pgEnum("paymentModeEnum", ["Cash", "Online"]);
+
+export const payments = pgTable("payments", {
+  id: uuid().notNull().defaultRandom(),
+  bookingId: uuid()
+    .notNull()
+    .references(() => bookings.id),
+  transactionType: transactionTypeEnum().notNull(),
+  amount: integer().notNull(),
+  paymentDate: timestamp({ mode: "date" }).notNull(),
+  referencePerson: uuid().notNull(),
+  paymentType: paymentTypeEnum().notNull(),
+  paymentMode: paymentModeEnum().notNull(),
+
+  // Bank Details
+  bankAccountNumber: text().notNull(),
+  bankName: text().notNull(),
+  bankAccountHolderName: text().notNull(),
+  bankIfsc: text().notNull(),
+  bankNickname: text().notNull(),
+});
+
+export const webhookStatusEnum = pgEnum("webhookStatus", [
+  "PENDING",
+  "PROCESSED",
+]);
+
+export const ezeeWebhookData = pgTable("ezWebhookData", {
+  id: uuid().primaryKey().defaultRandom(),
+  reqBody: json(),
+  status: webhookStatusEnum("webhookStatus").notNull(),
+  createdAt: timestamp().defaultNow(),
 });

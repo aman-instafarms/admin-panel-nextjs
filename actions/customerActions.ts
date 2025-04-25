@@ -1,100 +1,98 @@
 "use server";
 
 import { db } from "@/drizzle/db";
-import { and, eq, like, sql } from "drizzle-orm";
-import { rolesEnum, users } from "@/drizzle/schema";
+import { eq, like, sql } from "drizzle-orm";
+import { customers } from "@/drizzle/schema";
 import { revalidatePath } from "next/cache";
 import {
+  CustomerData,
   ServerActionResult,
   ServerSearchResult,
-  UserData,
 } from "@/utils/types";
-import { userFields } from "@/drizzle/fields";
-import { parseString, parseUserFormData } from "@/utils/server-utils";
+import { customerFields } from "@/drizzle/fields";
+import { parseCustomerFormData, parseString } from "@/utils/server-utils";
+import { v4 } from "uuid";
 
-export const createUser = async (
+export const createCustomer = async (
   formData: FormData,
 ): Promise<ServerActionResult> => {
-  const { firstName, lastName, mobileNumber, whatsappNumber, email, role } =
-    parseUserFormData(formData);
+  const { firstName, lastName, mobileNumber, email, dob, gender } =
+    parseCustomerFormData(formData);
 
   return await db
-    .insert(users)
+    .insert(customers)
     .values({
+      id: v4(),
       firstName,
       lastName,
       mobileNumber,
-      role,
-      whatsappNumber,
+      gender,
+      dob,
       email,
     })
     .then(() => {
       revalidatePath("/admin");
-      return { success: "User created." };
+      return { success: "Customer created." };
     })
     .catch((err) => {
       console.log("DB Error: ", err);
-      if (err?.constraint === "uniqueEmail") {
-        throw new Error("Email already registered with a user with this role.");
-      }
       throw new Error("Database error.");
     });
 };
 
-export const editUser = async (
+export const editCustomer = async (
   id: string,
   formData: FormData,
 ): Promise<ServerActionResult> => {
-  const { firstName, lastName, mobileNumber, whatsappNumber, email, role } =
-    parseUserFormData(formData);
+  const { firstName, lastName, mobileNumber, email, gender, dob } =
+    parseCustomerFormData(formData);
 
   if (!id) {
     throw new Error("Invalid id.");
   }
 
   return await db
-    .update(users)
+    .update(customers)
     .set({
       firstName,
       lastName,
       mobileNumber,
-      whatsappNumber,
       email,
-      role,
+      dob,
+      gender,
     })
-    .where(eq(users.id, id))
-    .returning(userFields)
+    .where(eq(customers.id, id))
+    .returning(customerFields)
     .then((res) => {
       if (res.length === 0) {
-        throw new Error("User not found.");
+        throw new Error("Customer not found.");
       }
       revalidatePath("/admin");
-      return { success: "User data updated." };
+      return { success: "Customer data updated." };
     })
     .catch((err) => {
       console.log("DB Error: ", err);
-      if (err?.constraint === "uniqueEmail") {
-        throw new Error("Email already registered with a user with this role.");
-      }
       throw new Error("Database error.");
     });
 };
 
-export const deleteUser = async (id: string): Promise<ServerActionResult> => {
+export const deleteCustomer = async (
+  id: string,
+): Promise<ServerActionResult> => {
   if (!id) {
     throw new Error("Invalid id.");
   }
 
   return await db
-    .delete(users)
-    .where(eq(users.id, id))
-    .returning(userFields)
+    .delete(customers)
+    .where(eq(customers.id, id))
+    .returning(customerFields)
     .then((res) => {
       if (res.length === 0) {
-        throw new Error("User not found.");
+        throw new Error("Customer not found.");
       }
       revalidatePath("/admin");
-      return { success: "User deleted." };
+      return { success: "Customer deleted." };
     })
     .catch((err) => {
       console.log("DB Error: ", err);
@@ -102,22 +100,16 @@ export const deleteUser = async (id: string): Promise<ServerActionResult> => {
     });
 };
 
-export const getUser = async (
+export const getCustomerById = async (
   id: string,
-  _role: string,
-): Promise<ServerSearchResult<UserData>> => {
-  const role = rolesEnum.enumValues.find((x) => x === _role);
-  if (!role) {
-    throw new Error("Invalid User Role.");
-  }
-
+): Promise<ServerSearchResult<CustomerData>> => {
   return await db
-    .select(userFields)
-    .from(users)
-    .where(and(eq(users.id, id), eq(users.role, role)))
+    .select(customerFields)
+    .from(customers)
+    .where(eq(customers.id, id))
     .then((res) => {
       if (res.length === 0) {
-        throw new Error("User not found");
+        throw new Error("Customer not found");
       }
       return { data: res[0] };
     })
@@ -127,9 +119,9 @@ export const getUser = async (
     });
 };
 
-export const searchUser = async (
+export const searchCustomer = async (
   formData: FormData,
-): Promise<ServerSearchResult<UserData[]>> => {
+): Promise<ServerSearchResult<CustomerData[]>> => {
   const searchKeys = ["Name", "Email", "Mobile"] as const;
   const searchKey = searchKeys.find(
     (x) => x === formData.get("searchKey")?.toString(),
@@ -140,7 +132,7 @@ export const searchUser = async (
     return { data: [] };
   }
 
-  const query = db.select(userFields).from(users);
+  const query = db.select(customerFields).from(customers);
   let queryWithFilter;
 
   if (!searchKey) {
@@ -148,14 +140,16 @@ export const searchUser = async (
   } else if (searchKey === "Name") {
     queryWithFilter = query.where(
       like(
-        sql`LOWER(COALESCE(${users.firstName}, '') || ' ' || COALESCE(${users.lastName}, ''))`,
+        sql`LOWER(COALESCE(${customers.firstName}, '') || ' ' || COALESCE(${customers.lastName}, ''))`,
         `${searchValue.toLowerCase()}%`,
       ),
     );
   } else if (searchKey === "Email") {
-    queryWithFilter = query.where(like(users.email, `${searchValue}%`));
+    queryWithFilter = query.where(like(customers.email, `${searchValue}%`));
   } else if (searchKey === "Mobile") {
-    queryWithFilter = query.where(like(users.mobileNumber, `${searchValue}%`));
+    queryWithFilter = query.where(
+      like(customers.mobileNumber, `${searchValue}%`),
+    );
   }
 
   return await (queryWithFilter ? queryWithFilter : query)

@@ -49,7 +49,7 @@ export default async function Page({ params }: ServerPageProps) {
       throw new Error("Database Error");
     });
 
-  const startOfDay = DateTime.utc().startOf("day").toJSDate();
+  const startOfDay = DateTime.now().minus({ days: 2 }).toFormat("yyyy-LL-dd");
   const specialDatesData = await db
     .select(specialDateFields)
     .from(specialDates)
