@@ -1,11 +1,19 @@
 import AdminSidebar from "@/components/Sidebar";
+import { isAdmin } from "@/utils/admin-only";
+import { redirect } from "next/navigation";
 import React from "react";
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const admin = await isAdmin();
+
+  if (!admin) {
+    redirect("/");
+  }
+
   return (
     <div className="flex h-full w-full flex-row text-white">
       <AdminSidebar />

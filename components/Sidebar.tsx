@@ -13,7 +13,10 @@ import {
   HiInformationCircle,
   HiGlobe,
   HiSearch,
+  HiUser,
+  HiUserCircle,
 } from "react-icons/hi";
+import { HiWrench } from "react-icons/hi2";
 
 export default function AdminSidebar() {
   return (
@@ -23,21 +26,21 @@ export default function AdminSidebar() {
           <SidebarItem href="/admin/admins" icon={HiInformationCircle}>
             Admins
           </SidebarItem>
-          <SidebarItem href="/admin/users" icon={HiInformationCircle}>
+          <SidebarItem href="/admin/users" icon={HiUser}>
             Users
           </SidebarItem>
-          <SidebarItem href="/admin/customers" icon={HiCalendar}>
+          <SidebarItem href="/admin/customers" icon={HiUserCircle}>
             Customers
           </SidebarItem>
           <SidebarItem href="/admin/properties" icon={HiOfficeBuilding}>
             Properties
           </SidebarItem>
-          <SidebarItem href="#" icon={HiCalendar}>
+          <SidebarItem href="/admin/bookings" icon={HiCalendar}>
             Bookings
           </SidebarItem>
         </SidebarItemGroup>
         <SidebarItemGroup>
-          <SidebarItem href="/admin/propertyTypes" icon={HiInformationCircle}>
+          <SidebarItem href="/admin/propertyTypes" icon={HiWrench}>
             Property Types
           </SidebarItem>
           <SidebarCollapse label="Locations" icon={HiGlobe}>

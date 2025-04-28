@@ -18,6 +18,11 @@ import { ActivityData, AmenityData } from "@/utils/types";
 
 export const rolesEnum = pgEnum("role", ["Owner", "Manager", "Caretaker"]);
 
+export const webhookStatusEnum = pgEnum("webhookstatus", [
+  "PENDING",
+  "PROCESSED",
+]);
+
 export const propertyTypes = pgTable("propertyTypes", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
@@ -449,34 +454,52 @@ export const paymentTypeEnum = pgEnum("paymentTypeEnum", [
 ]);
 export const paymentModeEnum = pgEnum("paymentModeEnum", ["Cash", "Online"]);
 
-export const payments = pgTable("payments", {
-  id: uuid().notNull().defaultRandom(),
-  bookingId: uuid()
-    .notNull()
-    .references(() => bookings.id),
-  transactionType: transactionTypeEnum().notNull(),
-  amount: integer().notNull(),
-  paymentDate: timestamp({ mode: "date" }).notNull(),
-  referencePerson: uuid().notNull(),
-  paymentType: paymentTypeEnum().notNull(),
-  paymentMode: paymentModeEnum().notNull(),
+export const payments = pgTable(
+  "payments",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    bookingId: uuid()
+      .notNull()
+      .references(() => bookings.id),
+    transactionType: transactionTypeEnum().notNull(),
+    amount: integer().notNull(),
+    paymentDate: timestamp({ mode: "string" }).notNull(),
+    referencePersonId: uuid().notNull(),
+    referencePersonRole: rolesEnum().notNull(),
+    paymentType: paymentTypeEnum().notNull(),
+    paymentMode: paymentModeEnum().notNull(),
+    paymentCreator: uuid(),
+    paymentCreatorRole: rolesEnum(),
+    paymentDeletor: uuid(),
+    paymentDeletorRole: rolesEnum(),
+    isDeleted: boolean().notNull().default(false),
 
-  // Bank Details
-  bankAccountNumber: text().notNull(),
-  bankName: text().notNull(),
-  bankAccountHolderName: text().notNull(),
-  bankIfsc: text().notNull(),
-  bankNickname: text().notNull(),
-});
-
-export const webhookStatusEnum = pgEnum("webhookStatus", [
-  "PENDING",
-  "PROCESSED",
-]);
+    // Bank Details
+    bankAccountNumber: text(),
+    bankName: text(),
+    bankAccountHolderName: text(),
+    bankIfsc: text(),
+    bankNickname: text(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.referencePersonId, table.referencePersonRole],
+      foreignColumns: [users.id, users.role],
+    }),
+    foreignKey({
+      columns: [table.paymentCreator, table.paymentCreatorRole],
+      foreignColumns: [users.id, users.role],
+    }),
+    foreignKey({
+      columns: [table.paymentDeletor, table.paymentDeletorRole],
+      foreignColumns: [users.id, users.role],
+    }),
+  ],
+);
 
 export const ezeeWebhookData = pgTable("ezWebhookData", {
   id: uuid().primaryKey().defaultRandom(),
   reqBody: json(),
-  status: webhookStatusEnum("webhookStatus").notNull(),
+  status: text().default("PENDING").notNull(),
   createdAt: timestamp().defaultNow(),
 });

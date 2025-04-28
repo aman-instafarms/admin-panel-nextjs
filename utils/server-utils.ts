@@ -2,10 +2,12 @@ import "server-only";
 import {
   _BookingData,
   _CancellationData,
+  _PaymentData,
   _PropertyData,
   ActivityData,
   AdminData,
   AmenityData,
+  BankDetail,
   CustomerData,
   DefaultPricing,
   Owner,
@@ -18,8 +20,11 @@ import {
   bookingTypeEnum,
   cancellationTypeEnum,
   genderEnum,
+  paymentModeEnum,
+  paymentTypeEnum,
   refundStatusEnum,
   rolesEnum,
+  transactionTypeEnum,
 } from "@/drizzle/schema";
 
 export function uniqueStringFilter(data: string[]): string[] {
@@ -99,9 +104,9 @@ export function parseNumber(str: string | undefined): number | null {
 
 export function validateDateStr(dateStr: string | undefined): string | null {
   if (!dateStr) return null;
-  const dt = DateTime.fromISO(dateStr);
+  const dt = DateTime.fromSQL(dateStr);
   if (dt.isValid) {
-    return dt.toSQL();
+    return dateStr;
   }
   return null;
 }
@@ -525,8 +530,7 @@ export function parseUserFormData(formData: FormData): UserData {
 
 export function parseCancellationFormData(
   formData: FormData,
-): _CancellationData {
-  const bookingId = parseString(formData.get("bookingId")?.toString());
+): Omit<_CancellationData, "bookingId"> {
   const refundAmount = parseNumber(formData.get("refundAmount")?.toString());
   const refundStatus = refundStatusEnum.enumValues.find(
     (x) => x === formData.get("refundStatus")?.toString(),
@@ -535,15 +539,12 @@ export function parseCancellationFormData(
     (x) => x === formData.get("cancellationType")?.toString(),
   );
   const referencePersonId = parseString(
-    formData.get("referencePersonId")?.toString(),
+    formData.get("cancellationReferencePersonId")?.toString(),
   );
   const referencePersonRole = rolesEnum.enumValues.find(
-    (x) => x === formData.get("referencePersonRole")?.toString(),
+    (x) => x === formData.get("cancellationReferencePersonRole")?.toString(),
   );
 
-  if (!bookingId) {
-    throw new Error("Invalid booking id");
-  }
   if (!refundAmount) {
     throw new Error("Invalid Refund Amount");
   }
@@ -561,13 +562,115 @@ export function parseCancellationFormData(
   }
 
   return {
-    bookingId,
     refundAmount,
     refundStatus,
     cancellationType,
     referencePersonId,
     referencePersonRole,
   };
+}
+
+export function parsePaymentFormData(
+  formData: FormData,
+): Omit<_PaymentData, "bookingId">[] {
+  const ids: string[] = [];
+  for (const key of formData.keys()) {
+    if (key.startsWith("payment-amount-")) {
+      ids.push(key.substring(15));
+    }
+  }
+
+  const data = ids.map((id) => {
+    const amount = parseNumber(
+      formData.get(`payment-amount-${id}`)?.toString(),
+    );
+    const paymentDate = parseString(formData.get(`payment-${id}`)?.toString());
+    const referencePersonId = parseString(
+      formData.get(`payment-referencePersonId-${id}`)?.toString(),
+    );
+    const referencePersonRole = rolesEnum.enumValues.find(
+      (x) =>
+        x ===
+        parseString(
+          formData.get(`payment-referencePersonRole-${id}`)?.toString(),
+        ),
+    );
+    const paymentMode = paymentModeEnum.enumValues.find(
+      (x) =>
+        x ===
+        parseString(formData.get(`payment-paymentMode-${id}`)?.toString()),
+    );
+    const transactionType = transactionTypeEnum.enumValues.find(
+      (x) =>
+        x ===
+        parseString(formData.get(`payment-transactionType-${id}`)?.toString()),
+    );
+    const paymentType = paymentTypeEnum.enumValues.find(
+      (x) =>
+        x ===
+        parseString(formData.get(`payment-paymentType-${id}`)?.toString()),
+    );
+    if (!amount) {
+      throw new Error("Invalid Amount.");
+    }
+    if (!paymentDate || !DateTime.fromSQL(paymentDate).isValid) {
+      throw new Error("Invalid payment date.");
+    }
+    if (!referencePersonId || !referencePersonRole) {
+      throw new Error("No reference person selected.");
+    }
+    if (!transactionType) {
+      throw new Error("Select transaction type.");
+    }
+    if (!paymentType) {
+      throw new Error("Select payment type.");
+    }
+    if (!paymentMode) {
+      throw new Error("Select payment mode.");
+    }
+    return {
+      id,
+      paymentDate,
+      transactionType: transactionType,
+      amount,
+      referencePersonId,
+      referencePersonRole,
+      paymentType,
+      paymentMode,
+      bankName: parseString(formData.get(`bankName-${id}`)?.toString()),
+      bankAccountHolderName: parseString(
+        formData.get(`bankAccountHolderName-${id}`)?.toString(),
+      ),
+      bankAccountNumber: parseString(
+        formData.get(`bankAccountNumber-${id}`)?.toString(),
+      ),
+      bankIfsc: parseString(formData.get(`bankIfsc-${id}`)?.toString()),
+      bankNickname: parseString(formData.get(`bankNickname-${id}`)?.toString()),
+    };
+  });
+
+  return data;
+}
+
+export function parseBankFormData(formData: FormData): BankDetail[] {
+  const ids: string[] = [];
+  for (const key of formData.keys()) {
+    if (key.startsWith("bankName-")) {
+      ids.push(key.substring(9));
+    }
+  }
+  return ids.map((id) => ({
+    id,
+    bankName: parseString(formData.get(`bankName-${id}`)?.toString()),
+    bankAccountHolderName: parseString(
+      formData.get(`bankAccountHolderName-${id}`)?.toString(),
+    ),
+    bankAccountNumber: parseString(
+      formData.get(`bankAccountNumber-${id}`)?.toString(),
+    ),
+    bankIfsc: parseString(formData.get(`bankIfsc-${id}`)?.toString()),
+    bankNickname: parseString(formData.get(`bankNickname-${id}`)?.toString()),
+  }));
 }
 
 export function parseBookingFormData(formData: FormData): _BookingData {
@@ -620,13 +723,13 @@ export function parseBookingFormData(formData: FormData): _BookingData {
   if (!bookingType) {
     throw new Error("Invalid Booking type");
   }
-  if (!adultCount) {
+  if (adultCount === null || adultCount < 1) {
     throw new Error("Enter number of adults");
   }
-  if (!childrenCount) {
+  if (childrenCount === null || childrenCount < 0) {
     throw new Error("Enter number of children");
   }
-  if (!infantCount) {
+  if (infantCount === null || infantCount < 0) {
     throw new Error("Enter number of infants");
   }
   if (!checkinDate) {
@@ -635,44 +738,49 @@ export function parseBookingFormData(formData: FormData): _BookingData {
   if (!checkoutDate) {
     throw new Error("Invalid checkout date");
   }
+  const checkinDt = DateTime.fromSQL(checkinDate);
+  const checkoutDt = DateTime.fromSQL(checkoutDate);
+  if (checkoutDt.diff(checkinDt, "days").days < 1) {
+    throw new Error("Check out date should be later than check in date");
+  }
   if (!bookingCreatorId) {
     throw new Error("No booking creator selected.");
   }
   if (!bookingCreatorRole) {
     throw new Error("Invalid booking creator role");
   }
-  if (!rentalCharge) {
+  if (rentalCharge === null || rentalCharge < 0) {
     throw new Error("Enter Rental Charge");
   }
-  if (!extraGuestCharge) {
-    throw new Error("Enter Rental Charge");
+  if (extraGuestCharge === null || extraGuestCharge < 0) {
+    throw new Error("Enter Extra guest Charge");
   }
-  if (!ownerDiscount) {
-    throw new Error("Enter Rental Charge");
+  if (ownerDiscount === null || ownerDiscount < 0) {
+    throw new Error("Enter owner discount");
   }
-  if (!multipleNightsDiscount) {
-    throw new Error("Enter Rental Charge");
+  if (multipleNightsDiscount === null || multipleNightsDiscount < 0) {
+    throw new Error("Enter multiple nights discount");
   }
-  if (!couponDiscount) {
-    throw new Error("Enter Rental Charge");
+  if (couponDiscount === null || couponDiscount < 0) {
+    throw new Error("Enter coupon discount");
   }
-  if (!totalDiscount) {
-    throw new Error("Enter Rental Charge");
+  if (totalDiscount === null || totalDiscount < 0) {
+    throw new Error("Enter total discount");
   }
-  if (!gstAmount) {
-    throw new Error("Enter Rental Charge");
+  if (gstAmount === null || gstAmount < 0) {
+    throw new Error("Enter gst amount");
   }
-  if (!gstPercentage) {
-    throw new Error("Enter Rental Charge");
+  if (gstPercentage === null || gstPercentage < 0) {
+    throw new Error("Enter gst percentage");
   }
-  if (!otaCommission) {
-    throw new Error("Enter Rental Charge");
+  if (otaCommission === null || otaCommission < 0) {
+    throw new Error("Enter ota commission");
   }
-  if (!paymentGatewayCharge) {
-    throw new Error("Enter Rental Charge");
+  if (paymentGatewayCharge === null || paymentGatewayCharge < 0) {
+    throw new Error("Enter payment gateway charge");
   }
-  if (!netOwnerRevenue) {
-    throw new Error("Enter Rental Charge");
+  if (netOwnerRevenue === null || netOwnerRevenue < 0) {
+    throw new Error("Enter net owner revenue");
   }
 
   return {
@@ -680,7 +788,7 @@ export function parseBookingFormData(formData: FormData): _BookingData {
     bookingType,
     propertyId,
     customerId,
-    bookingSource: parseString(formData.get("propertyId")?.toString()),
+    bookingSource: parseString(formData.get("bookingSource")?.toString()),
     adultCount,
     childrenCount,
     infantCount,

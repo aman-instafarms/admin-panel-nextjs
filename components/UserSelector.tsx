@@ -12,9 +12,14 @@ import { getUser, searchUser } from "@/actions/userActions";
 interface UserSelectorProps {
   data: { id: string; role: string } | null;
   update: (data: { id: string; role: UserRole } | null) => void;
+  readOnly?: boolean;
 }
 
-export default function UserSelector({ data, update }: UserSelectorProps) {
+export default function UserSelector({
+  data,
+  update,
+  readOnly,
+}: UserSelectorProps) {
   const [searchResults, setSearchResults] = useState<UserData[]>([]);
   const [loading, startTransition] = useTransition();
   const [uniqueId] = useState<string>(v4());
@@ -87,29 +92,35 @@ export default function UserSelector({ data, update }: UserSelectorProps) {
     <Popover
       content={
         <Card className="m-0 min-w-xl">
-          <h4 className="font-bold">
-            Search Users using Name, Email or Mobile
-          </h4>
-          <div className="flex flex-row items-center gap-2">
-            <Select id={`user-searchKey-${uniqueId}`} className="min-w-32">
-              <option value="Name">Name</option>
-              <option value="Mobile">Mobile</option>
-              <option value="Email">Email</option>
-            </Select>
-            <TextInput
-              type="text"
-              id={`user-searchValue-${uniqueId}`}
-              className="w-full"
-            />
-            <MyButton
-              onClick={handleSearch}
-              loading={loading}
-              type="submit"
-              className="px-2"
-            >
-              <HiSearch size={24} />
-            </MyButton>
-          </div>
+          {readOnly ? (
+            <h4 className="font-bold">User Detail (Readonly)</h4>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <h4 className="font-bold">
+                Search Users using Name, Email or Mobile
+              </h4>
+              <div className="flex flex-row items-center gap-2">
+                <Select id={`user-searchKey-${uniqueId}`} className="min-w-32">
+                  <option value="Name">Name</option>
+                  <option value="Mobile">Mobile</option>
+                  <option value="Email">Email</option>
+                </Select>
+                <TextInput
+                  type="text"
+                  id={`user-searchValue-${uniqueId}`}
+                  className="w-full"
+                />
+                <MyButton
+                  onClick={handleSearch}
+                  loading={loading}
+                  type="submit"
+                  className="px-2"
+                >
+                  <HiSearch size={24} />
+                </MyButton>
+              </div>
+            </div>
+          )}
           <div>
             {loading ? (
               <div>Searching...</div>
@@ -126,6 +137,7 @@ export default function UserSelector({ data, update }: UserSelectorProps) {
                         result.role === data.role
                       }
                       onChange={() =>
+                        !readOnly &&
                         update(
                           data &&
                             data.id === result.id &&

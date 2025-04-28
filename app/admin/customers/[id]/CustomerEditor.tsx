@@ -7,7 +7,7 @@ import { parseServerActionResult } from "@/utils/utils";
 import { Datepicker, Label, Select, TextInput } from "flowbite-react";
 import { DateTime } from "luxon";
 import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import toast from "react-hot-toast";
 
 interface CustomerEditorProps {
@@ -19,11 +19,17 @@ export default function CustomerEditor(props: CustomerEditorProps) {
   const router = useRouter();
   const [dob, setDob] = useState<Date | null>(new Date());
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.target as HTMLFormElement);
-    if (dob) {
-      formData.set("dob", DateTime.fromJSDate(dob).toFormat("yyyy-LL-dd"));
+  const handleSubmit = () => {
+    const formEl = document.getElementById(
+      "customerForm",
+    ) as HTMLFormElement | null;
+    if (!formEl) {
+      return toast.error("Error");
+    }
+    const formData = new FormData(formEl);
+    const dobDt = dob && DateTime.fromJSDate(dob);
+    if (dobDt?.isValid) {
+      formData.set("dob", dobDt.toSQLDate());
     } else {
       formData.delete("dob");
     }
@@ -59,7 +65,7 @@ export default function CustomerEditor(props: CustomerEditorProps) {
       el = document.getElementById("mobileNumber") as HTMLInputElement;
       el.value = props.data.mobileNumber || "";
       console.log(props.data.dob);
-      setDob(DateTime.fromFormat(props.data.dob, "yyyy-LL-dd").toJSDate());
+      setDob(DateTime.fromSQL(props.data.dob).toJSDate());
 
       const selectEl = document.getElementById("gender") as HTMLSelectElement;
       selectEl.value = props.data.gender || "";
@@ -67,7 +73,7 @@ export default function CustomerEditor(props: CustomerEditorProps) {
   }, [props.data]);
 
   return (
-    <form onSubmit={handleSubmit} className="flex w-full flex-col gap-5">
+    <form className="flex w-full flex-col gap-5" id="customerForm">
       <div className="grid w-full grid-cols-2 gap-5">
         <div>
           <div className="mb-2 block">
@@ -140,7 +146,7 @@ export default function CustomerEditor(props: CustomerEditorProps) {
         </div>
       </div>
       <div className="flex flex-row justify-end">
-        <MyButton type="submit" loading={loading}>
+        <MyButton loading={loading} onClick={handleSubmit}>
           Submit
         </MyButton>
       </div>

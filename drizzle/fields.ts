@@ -7,6 +7,7 @@ import {
   cancellations,
   cities,
   customers,
+  payments,
   properties,
   propertyTypes,
   specialDates,
@@ -304,5 +305,33 @@ export const bookingFields = {
     dob: customers.dob,
     mobileNumber: customers.mobileNumber,
     gender: customers.gender,
+  },
+  bookingCreator: {
+    ...userFields,
+  },
+};
+
+export const _paymentFields = {
+  id: payments.id,
+  bookingId: payments.bookingId,
+  transactionType: payments.transactionType,
+  amount: payments.amount,
+  paymentDate: payments.paymentDate,
+  referencePersonId: payments.referencePersonId,
+  referencePersonRole: payments.referencePersonRole,
+  paymentType: payments.paymentType,
+  paymentMode: payments.paymentMode,
+
+  bankAccountNumber: payments.bankAccountNumber,
+  bankName: payments.bankName,
+  bankAccountHolderName: payments.bankAccountHolderName,
+  bankIfsc: payments.bankIfsc,
+  bankNickname: payments.bankNickname,
+};
+
+export const paymentFields = {
+  ..._paymentFields,
+  referencePerson: {
+    ...userFields,
   },
 };

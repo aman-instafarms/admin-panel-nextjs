@@ -16,7 +16,7 @@ import {
   Button,
 } from "flowbite-react";
 import Link from "next/link";
-import { HiPencil, HiUser } from "react-icons/hi";
+import { HiPencil } from "react-icons/hi";
 import DeletePropertyButton from "./DeletePropertyButton";
 import { eq } from "drizzle-orm";
 import Pagination from "@/components/Pagination";
@@ -100,8 +100,24 @@ export default async function Page({ searchParams }: ServerPageProps) {
                         href={`/admin/properties/${id}/owners`}
                         className="w-fit"
                       >
-                        <div className="rounded-md bg-blue-600 p-1">
-                          <HiUser size={20} className="text-white" />
+                        <div className="rounded-md bg-blue-600 p-2 text-white">
+                          Owners
+                        </div>
+                      </Link>
+                      <Link
+                        href={`/admin/properties/${id}/managers`}
+                        className="w-fit"
+                      >
+                        <div className="rounded-md bg-blue-600 p-2 text-white">
+                          Managers
+                        </div>
+                      </Link>
+                      <Link
+                        href={`/admin/properties/${id}/caretakers`}
+                        className="w-fit"
+                      >
+                        <div className="rounded-md bg-blue-600 p-2 text-white">
+                          Caretakers
                         </div>
                       </Link>
                     </div>

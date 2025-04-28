@@ -1,6 +1,12 @@
 import { db } from "@/drizzle/db";
-import { customerFields } from "@/drizzle/fields";
-import { customers } from "@/drizzle/schema";
+import { bookingFields } from "@/drizzle/fields";
+import {
+  bookings,
+  cancellations,
+  customers,
+  properties,
+  users,
+} from "@/drizzle/schema";
 import { parseFilterParams, parseLimitOffset } from "@/utils/server-utils";
 import { ServerPageProps } from "@/utils/types";
 import {
@@ -19,35 +25,61 @@ import Link from "next/link";
 import { HiPencil } from "react-icons/hi";
 import Searchbar from "@/components/Searchbar";
 import { like } from "drizzle-orm/pg-core/expressions";
-import { sql } from "drizzle-orm";
+import { and, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import Pagination from "@/components/Pagination";
-import { DateTime } from "luxon";
-import DeleteCustomerButton from "./DeleteCustomerButton";
 
-const searchbarKeys = ["Name", "Email", "Mobile"];
+const searchbarKeys = [
+  "Property Code",
+  "Property Name",
+  "Status",
+  "Booking Creator Name",
+];
 
 export default async function Page({ searchParams }: ServerPageProps) {
   const { limit, offset } = parseLimitOffset(await searchParams);
   const filterParams = parseFilterParams(await searchParams);
 
-  const query = db.select(customerFields).from(customers);
+  const query = db
+    .select(bookingFields)
+    .from(bookings)
+    .leftJoin(properties, eq(bookings.propertyId, properties.id))
+    .leftJoin(customers, eq(bookings.customerId, customers.id))
+    .leftJoin(cancellations, eq(bookings.id, cancellations.bookingId))
+    .leftJoin(
+      users,
+      and(
+        eq(bookings.bookingCreatorId, users.id),
+        eq(bookings.bookingCreatorRole, users.role),
+      ),
+    );
 
   let queryWithFilter;
   if (filterParams) {
-    if (filterParams.searchKey === "Name") {
+    if (filterParams.searchKey === "Property Code") {
+      queryWithFilter = query.where(
+        like(properties.propertyCode, `${filterParams.searchValue}%`),
+      );
+    } else if (filterParams.searchKey === "Property Name") {
+      queryWithFilter = query.where(
+        like(properties.propertyName, `${filterParams.searchValue}%`),
+      );
+    } else if (filterParams.searchKey === "Status") {
+      if (
+        filterParams.searchValue === "Cancelled" ||
+        filterParams.searchValue === "Upcoming"
+      ) {
+        queryWithFilter = query.where(
+          filterParams.searchValue === "Cancelled"
+            ? isNotNull(cancellations.bookingId)
+            : isNull(cancellations.bookingId),
+        );
+      }
+    } else if (filterParams.searchKey === "Booking Creator Name") {
       queryWithFilter = query.where(
         like(
-          sql`LOWER(COALESCE(${customers.firstName}, '') || ' ' || COALESCE(${customers.lastName}, ''))`,
+          sql`LOWER(COALESCE(${users.firstName}, '') || ' ' || COALESCE(${users.lastName}, ''))`,
           `${filterParams.searchValue.toLowerCase()}%`,
         ),
-      );
-    } else if (filterParams.searchKey === "Email") {
-      queryWithFilter = query.where(
-        like(customers.email, `${filterParams.searchValue}%`),
-      );
-    } else if (filterParams.searchKey === "Mobile") {
-      queryWithFilter = query.where(
-        like(customers.mobileNumber, `${filterParams.searchValue}%`),
       );
     }
   }
@@ -66,21 +98,21 @@ export default async function Page({ searchParams }: ServerPageProps) {
         <div className="space-between flex w-full flex-row items-center">
           <div className="flex w-full flex-col gap-2">
             <h5 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
-              Customers
+              Bookings
             </h5>
 
             <Breadcrumb className="bg-gray-50 pb-3 dark:bg-gray-800">
               <BreadcrumbItem href="/">Home</BreadcrumbItem>
               <BreadcrumbItem href="/admin">Admin</BreadcrumbItem>
-              <BreadcrumbItem href="#">Customers</BreadcrumbItem>
+              <BreadcrumbItem href="#">Bookings</BreadcrumbItem>
             </Breadcrumb>
           </div>
           <div className="flex flex-row items-center justify-end gap-5">
             <Searchbar
               searchKeys={searchbarKeys}
-              defaultSearchKey={filterParams?.searchKey || "Name"}
+              defaultSearchKey={filterParams?.searchKey || "Status"}
             />
-            <Link href="/admin/customers/create" className="cursor-pointer">
+            <Link href="/admin/bookings/create" className="cursor-pointer">
               <Button>New</Button>
             </Link>
           </div>
@@ -91,50 +123,65 @@ export default async function Page({ searchParams }: ServerPageProps) {
             <TableHead>
               <TableRow>
                 <TableHeadCell>S. No.</TableHeadCell>
-                <TableHeadCell>Name</TableHeadCell>
-                <TableHeadCell>Email</TableHeadCell>
-                <TableHeadCell>Mobile Number</TableHeadCell>
-                <TableHeadCell>Gender</TableHeadCell>
-                <TableHeadCell>Age</TableHeadCell>
+                <TableHeadCell>Property</TableHeadCell>
+                <TableHeadCell>Customer Name</TableHeadCell>
+                <TableHeadCell>Guest Count</TableHeadCell>
+                <TableHeadCell>Booking Created by</TableHeadCell>
+                <TableHeadCell>Checkin</TableHeadCell>
+                <TableHeadCell>Checkout</TableHeadCell>
+                <TableHeadCell>Status</TableHeadCell>
                 <TableHeadCell>Actions</TableHeadCell>
               </TableRow>
             </TableHead>
             <TableBody className="divide-y">
-              {data.map((user, index) => (
+              {data.map((booking, index) => (
                 <TableRow
                   className="bg-white dark:border-gray-700 dark:bg-gray-800"
-                  key={user.id}
+                  key={booking.id}
                 >
                   <TableCell>{offset + index + 1}</TableCell>
                   <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
-                    {user.firstName} {user.lastName}
+                    {booking.property?.propertyCode &&
+                      `${booking.property.propertyCode} -`}{" "}
+                    {booking.property?.propertyName}
                   </TableCell>
                   <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
-                    {user.email}
+                    {booking.customer?.firstName} {booking.customer?.lastName}
                   </TableCell>
                   <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
-                    {user.mobileNumber}
+                    {booking.adultCount}-{booking.childrenCount}-
+                    {booking.infantCount}
                   </TableCell>
                   <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
-                    {user.gender}
+                    {booking.bookingCreator?.firstName}{" "}
+                    {booking.bookingCreator?.lastName} - (
+                    {booking.bookingCreatorRole})
                   </TableCell>
                   <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
-                    {Math.floor(
-                      DateTime.now().diff(
-                        DateTime.fromFormat(user.dob, "yyyy-LL-mm"),
-                        "years",
-                      ).years,
-                    )}{" "}
-                    years
+                    {booking.checkinDate}
+                  </TableCell>
+                  <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
+                    {booking.checkoutDate}
+                  </TableCell>
+                  <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
+                    <span
+                      className={
+                        booking.cancellation ? "text-red-500" : "text-blue-500"
+                      }
+                    >
+                      {booking.cancellation ? "Cancelled" : "Upcoming"}
+                    </span>
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-row items-center gap-3">
-                      <a href={`/admin/customers/${user.id}`} className="w-fit">
+                      <a
+                        href={`/admin/bookings/${booking.id}`}
+                        className="w-fit"
+                      >
                         <div className="rounded-md bg-blue-600 p-1">
                           <HiPencil size={20} className="text-white" />
                         </div>
                       </a>
-                      <DeleteCustomerButton id={user.id} />
                     </div>
                   </TableCell>
                 </TableRow>

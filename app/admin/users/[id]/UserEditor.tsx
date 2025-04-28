@@ -6,7 +6,7 @@ import { UserData } from "@/utils/types";
 import { parseServerActionResult } from "@/utils/utils";
 import { Label, Select, TextInput } from "flowbite-react";
 import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useTransition } from "react";
+import { useEffect, useTransition } from "react";
 import toast from "react-hot-toast";
 
 interface UserEditorProps {
@@ -17,9 +17,14 @@ export default function UserEditor(props: UserEditorProps) {
   const [loading, startTransition] = useTransition();
   const router = useRouter();
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.target as HTMLFormElement);
+  const handleSubmit = () => {
+    const formEl = document.getElementById(
+      "userForm",
+    ) as HTMLFormElement | null;
+    if (!formEl) {
+      return toast.error("Error");
+    }
+    const formData = new FormData(formEl);
     startTransition(() => {
       let promise: Promise<string>;
 
@@ -60,7 +65,7 @@ export default function UserEditor(props: UserEditorProps) {
   }, [props.data]);
 
   return (
-    <form onSubmit={handleSubmit} className="flex w-full flex-col gap-5">
+    <form className="flex w-full flex-col gap-5" id="userForm">
       <div className="grid w-full grid-cols-2 gap-5">
         <div>
           <div className="mb-2 block">
@@ -132,7 +137,7 @@ export default function UserEditor(props: UserEditorProps) {
         </div>
       </div>
       <div className="flex flex-row justify-end">
-        <MyButton type="submit" loading={loading}>
+        <MyButton onClick={handleSubmit} loading={loading}>
           Submit
         </MyButton>
       </div>

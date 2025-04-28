@@ -12,6 +12,7 @@ import { getPropertyById, searchProperty } from "@/actions/propertyActions";
 interface PropertySelectorProps {
   propertyId: string | null;
   update: (propertyId: string | null) => void;
+  readOnly?: boolean;
 }
 
 function getPropertyName(property: _PropertyData) {
@@ -21,6 +22,7 @@ function getPropertyName(property: _PropertyData) {
 export default function PropertySelector({
   propertyId,
   update,
+  readOnly,
 }: PropertySelectorProps) {
   const [searchResults, setSearchResults] = useState<_PropertyData[]>([]);
   const [loading, startTransition] = useTransition();
@@ -84,49 +86,59 @@ export default function PropertySelector({
     <Popover
       content={
         <Card className="m-0 min-w-xl">
-          <h4 className="font-bold">Search Properties using Name or Code</h4>
-          <div className="flex flex-row items-center gap-2">
-            <Select id={`property-searchKey-${uniqueId}`} className="min-w-36">
-              <option value="Property Name">Property Name</option>
-              <option value="Property Code">Property Code</option>
-            </Select>
-            <TextInput
-              type="text"
-              id={`property-searchValue-${uniqueId}`}
-              className="w-full"
-            />
-            <MyButton
-              onClick={handleSearch}
-              loading={loading}
-              type="submit"
-              className="px-2"
-            >
-              <HiSearch size={24} />
-            </MyButton>
-          </div>
-          <div>
-            {loading ? (
-              <div>Searching...</div>
-            ) : searchResults.length === 0 ? (
-              <div>No properties found.</div>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {searchResults.map((result) => (
-                  <label key={result.id} className="flex items-center gap-4">
-                    <Checkbox
-                      checked={result.id === propertyId}
-                      onChange={() =>
-                        update(propertyId === result.id ? null : result.id)
-                      }
-                    />
-                    <div className="flex w-full cursor-pointer flex-col">
-                      <div className="font-bold">{getPropertyName(result)}</div>
-                    </div>
-                  </label>
-                ))}
+          {readOnly ? (
+            <h4 className="font-bold">Property Detail (Readonly)</h4>
+          ) : (
+            <div>
+              <h4 className="mb-2 font-bold">
+                Search Properties using Name or Code
+              </h4>
+              <div className="flex flex-row items-center gap-2">
+                <Select
+                  id={`property-searchKey-${uniqueId}`}
+                  className="min-w-36"
+                >
+                  <option value="Property Name">Property Name</option>
+                  <option value="Property Code">Property Code</option>
+                </Select>
+                <TextInput
+                  type="text"
+                  id={`property-searchValue-${uniqueId}`}
+                  className="w-full"
+                />
+                <MyButton
+                  onClick={handleSearch}
+                  loading={loading}
+                  type="submit"
+                  className="px-2"
+                >
+                  <HiSearch size={24} />
+                </MyButton>
               </div>
-            )}
-          </div>
+            </div>
+          )}
+          {loading ? (
+            <div>Searching...</div>
+          ) : searchResults.length === 0 ? (
+            <div>No properties found.</div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {searchResults.map((result) => (
+                <label key={result.id} className="flex items-center gap-4">
+                  <Checkbox
+                    checked={result.id === propertyId}
+                    onChange={() =>
+                      !readOnly &&
+                      update(propertyId === result.id ? null : result.id)
+                    }
+                  />
+                  <div className="flex w-full cursor-pointer flex-col">
+                    <div className="font-bold">{getPropertyName(result)}</div>
+                  </div>
+                </label>
+              ))}
+            </div>
+          )}
         </Card>
       }
     >

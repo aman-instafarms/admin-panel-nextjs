@@ -17,7 +17,14 @@ export default function AdminEditor(props: AdminEditorProps) {
   const [loading, startTransition] = useTransition();
   const router = useRouter();
 
-  const handleSubmit = (formData: FormData) => {
+  const handleSubmit = () => {
+    const formEl = document.getElementById(
+      "adminForm",
+    ) as HTMLFormElement | null;
+    if (!formEl) {
+      return toast.error("Error");
+    }
+    const formData = new FormData(formEl);
     startTransition(() => {
       let promise: Promise<string>;
 
@@ -54,7 +61,7 @@ export default function AdminEditor(props: AdminEditorProps) {
 
   return (
     <form
-      action={handleSubmit}
+      id="adminForm"
       className="mx-auto flex w-full max-w-sm flex-col gap-4"
     >
       <div>
@@ -103,7 +110,7 @@ export default function AdminEditor(props: AdminEditorProps) {
           placeholder="Enter Phone Number"
         />
       </div>
-      <MyButton type="submit" loading={loading}>
+      <MyButton loading={loading} onClick={handleSubmit}>
         Submit
       </MyButton>
     </form>

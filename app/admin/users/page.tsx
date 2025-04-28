@@ -49,7 +49,6 @@ export default async function Page({ searchParams }: ServerPageProps) {
         queryWithFilter = query.where(
           eq(users.role, filterParams.searchValue as UserData["role"]),
         );
-      } else {
       }
     }
   }

@@ -17,7 +17,7 @@ import {
 } from "flowbite-react";
 import Link from "next/link";
 import { HiPencil } from "react-icons/hi";
-import DeleteStateButton from "./DeleteAdminButton";
+import DeleteAdminButton from "./DeleteAdminButton";
 import Pagination from "@/components/Pagination";
 
 export default async function Page({ searchParams }: ServerPageProps) {
@@ -87,7 +87,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
                           <HiPencil size={20} className="text-white" />
                         </div>
                       </a>
-                      <DeleteStateButton id={admin.id} />
+                      <DeleteAdminButton id={admin.id} />
                     </div>
                   </TableCell>
                 </TableRow>

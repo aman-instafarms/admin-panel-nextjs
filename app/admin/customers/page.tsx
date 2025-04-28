@@ -120,10 +120,8 @@ export default async function Page({ searchParams }: ServerPageProps) {
                   </TableCell>
                   <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
                     {Math.floor(
-                      DateTime.now().diff(
-                        DateTime.fromFormat(user.dob, "yyyy-LL-mm"),
-                        "years",
-                      ).years,
+                      DateTime.now().diff(DateTime.fromSQL(user.dob), "years")
+                        .years,
                     )}{" "}
                     years
                   </TableCell>

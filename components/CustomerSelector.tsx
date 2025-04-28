@@ -12,10 +12,12 @@ import { v4 } from "uuid";
 interface CustomerSelectorProps {
   customerId: string | null;
   update: (customerId: string | null) => void;
+  readOnly?: boolean;
 }
 
 export default function CustomerSelector({
   customerId,
+  readOnly,
   update,
 }: CustomerSelectorProps) {
   const [searchResults, setSearchResults] = useState<CustomerData[]>([]);
@@ -63,6 +65,7 @@ export default function CustomerSelector({
   };
 
   useEffect(() => {
+    console.log(customerId);
     if (customerId) {
       startTransition(() => {
         getCustomerById(customerId).then(({ data }) => {
@@ -74,8 +77,6 @@ export default function CustomerSelector({
     }
   }, []);
 
-  console.log(searchResults, selectedCustomer, customerId);
-
   const customerName =
     selectedCustomer &&
     `${selectedCustomer.firstName} ${selectedCustomer.lastName ? selectedCustomer.lastName : ""}`;
@@ -84,29 +85,38 @@ export default function CustomerSelector({
     <Popover
       content={
         <Card className="m-0 min-w-xl">
-          <h4 className="font-bold">
-            Search Customers using Name, Email or Mobile
-          </h4>
-          <div className="flex flex-row items-center gap-2">
-            <Select id={`customer-searchKey-${uniqueId}`} className="min-w-32">
-              <option value="Name">Name</option>
-              <option value="Mobile">Mobile</option>
-              <option value="Email">Email</option>
-            </Select>
-            <TextInput
-              type="text"
-              id={`customer-searchValue-${uniqueId}`}
-              className="w-full"
-            />
-            <MyButton
-              onClick={handleSearch}
-              loading={loading}
-              type="submit"
-              className="px-2"
-            >
-              <HiSearch size={24} />
-            </MyButton>
-          </div>
+          {readOnly ? (
+            <h4 className="font-bold">Customer Detail (Readonly)</h4>
+          ) : (
+            <div>
+              <h4 className="mb-2 font-bold">
+                Search Customers using Name, Email or Mobile
+              </h4>
+              <div className="flex flex-row items-center gap-2">
+                <Select
+                  id={`customer-searchKey-${uniqueId}`}
+                  className="min-w-32"
+                >
+                  <option value="Name">Name</option>
+                  <option value="Mobile">Mobile</option>
+                  <option value="Email">Email</option>
+                </Select>
+                <TextInput
+                  type="text"
+                  id={`customer-searchValue-${uniqueId}`}
+                  className="w-full"
+                />
+                <MyButton
+                  onClick={handleSearch}
+                  loading={loading}
+                  type="submit"
+                  className="px-2"
+                >
+                  <HiSearch size={24} />
+                </MyButton>
+              </div>
+            </div>
+          )}
           <div>
             {loading ? (
               <div>Searching...</div>
@@ -119,6 +129,7 @@ export default function CustomerSelector({
                     <Checkbox
                       checked={result.id === customerId}
                       onChange={() =>
+                        !readOnly &&
                         update(customerId === result.id ? null : result.id)
                       }
                     />

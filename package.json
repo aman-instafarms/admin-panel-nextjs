@@ -14,12 +14,18 @@
     "push": "npx drizzle-kit push"
   },
   "dependencies": {
+    "@firebase/auth": "^1.10.1",
+    "@types/js-cookie": "^3.0.6",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.41.0",
+    "firebase": "^11.6.1",
+    "firebase-admin": "^13.3.0",
     "flowbite-react": "^0.11.0",
+    "js-cookie": "^3.0.5",
     "luxon": "^3.6.1",
     "next": "15.2.3",
     "pg": "^8.14.1",
+    "pg-native": "^3.4.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hot-toast": "^2.5.2",

@@ -32,7 +32,8 @@ import {
   ToggleSwitch,
 } from "flowbite-react";
 import { DateTime } from "luxon";
-import { FormEvent, useEffect, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, useTransition } from "react";
 import toast from "react-hot-toast";
 import { HiMinus, HiPlus } from "react-icons/hi";
 import { v4 } from "uuid";
@@ -50,7 +51,7 @@ interface PropertyEditorProps {
 
 const createNewSpecialDate = (): SpecialDateData => ({
   id: v4(),
-  date: DateTime.now().toFormat("yyyy-LL-dd"),
+  date: DateTime.now().toSQLDate(),
   price: null,
   adultExtraGuestCharge: null,
   childExtraGuestCharge: null,
@@ -77,7 +78,7 @@ const createNewAmenity = (): AmenityData => ({
 
 export default function PropertyEditor(props: PropertyEditorProps) {
   const [loading, startTransition] = useTransition();
-
+  const router = useRouter();
   const [daywisePrice, setDaywisePrice] = useState<boolean>(false);
   const [checkinTime, setCheckinTime] = useState<string | null>(null);
   const [checkoutTime, setCheckoutTime] = useState<string | null>(null);
@@ -120,9 +121,14 @@ export default function PropertyEditor(props: PropertyEditorProps) {
   const addSpecialDate = () =>
     setSpecialDateData([...specialDateData, createNewSpecialDate()]);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.target as HTMLFormElement);
+  const handleSubmit = () => {
+    const formEl = document.getElementById(
+      "propertyForm",
+    ) as HTMLFormElement | null;
+    if (!formEl) {
+      return toast.error("Error");
+    }
+    const formData = new FormData(formEl);
     formData.set("daywisePrice", daywisePrice ? "true" : "false");
     formData.set("checkinTime", checkinTime ? checkinTime : "");
     formData.set("checkoutTime", checkoutTime ? checkoutTime : "");
@@ -138,6 +144,7 @@ export default function PropertyEditor(props: PropertyEditorProps) {
       toast.promise(promise, {
         loading: "Saving property...",
         success: (data) => {
+          router.push("/admin/properties");
           return data;
         },
         error: (err) => (err as Error).message,
@@ -778,7 +785,7 @@ function SpecialDateRow({
   addSpecialDate: () => void;
   removeSpecialDate: () => void;
 }) {
-  const dt = DateTime.fromFormat(data.date, "yyyy-LL-dd").toJSDate();
+  const dt = DateTime.fromSQL(data.date).toJSDate();
 
   useEffect(() => {
     let el: HTMLInputElement;

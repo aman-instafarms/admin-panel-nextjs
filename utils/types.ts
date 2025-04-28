@@ -2,8 +2,11 @@ import {
   bookingTypeEnum,
   cancellationTypeEnum,
   genderEnum,
+  paymentModeEnum,
+  paymentTypeEnum,
   refundStatusEnum,
   rolesEnum,
+  transactionTypeEnum,
 } from "@/drizzle/schema";
 
 export interface ServerActionResult {
@@ -303,6 +306,35 @@ export interface BookingData extends _BookingData {
   customer: CustomerData | null;
 }
 
+export type TransactionType = (typeof transactionTypeEnum.enumValues)[number];
+export type PaymentType = (typeof paymentTypeEnum.enumValues)[number];
+export type PaymentMode = (typeof paymentModeEnum.enumValues)[number];
+
+export interface _PaymentData extends Omit<BankDetail, "id"> {
+  id: string;
+  bookingId: string;
+  transactionType: TransactionType;
+  amount: number;
+  paymentDate: string;
+  referencePersonId: string;
+  referencePersonRole: UserRole;
+  paymentType: PaymentType;
+  paymentMode: PaymentMode;
+}
+
+export interface BankDetail {
+  id: string;
+  bankAccountNumber: string | null;
+  bankName: string | null;
+  bankAccountHolderName: string | null;
+  bankIfsc: string | null;
+  bankNickname: string | null;
+}
+
+export interface PaymentData extends _PaymentData {
+  referenceUser: UserData;
+}
+
 export interface _CancellationData {
   bookingId: string;
   refundAmount: number;
@@ -312,7 +344,7 @@ export interface _CancellationData {
   referencePersonRole: UserRole;
 }
 
-export interface CancellationData {
+export interface CancellationData extends _CancellationData {
   referencePerson: UserData;
 }
 
