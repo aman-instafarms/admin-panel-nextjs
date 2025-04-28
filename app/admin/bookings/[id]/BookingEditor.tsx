@@ -626,55 +626,57 @@ export default function BookingEditor(props: BookingEditorProps) {
             </MyButton>
           </div>
         </TabItem>
-        <TabItem title="Cancellation" className="align-center flex flex-col">
-          {props.data?.cancellation || showCancellationForm ? (
-            <div>
-              <div className="mx-auto grid max-w-[400px] grid-cols-1 gap-5">
-                <LabelWrapper label="Refund Amount">
-                  <TextInput
-                    type="numeric"
-                    inputMode="numeric"
-                    id="refundAmount"
-                    name="refundAmount"
-                  ></TextInput>
-                </LabelWrapper>
-                <LabelWrapper label="Refund Amount">
-                  <Select id="refundStatus" name="refundStatus">
-                    <option value="">Select Refund Status</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Completed">Completed</option>
-                  </Select>
-                </LabelWrapper>
-                <LabelWrapper label="Cancellation Type">
-                  <Select id="cancellationType" name="cancellationType">
-                    <option value="">Select Cancellation Type</option>
-                    <option value="Online">Online</option>
-                    <option value="Offline">Offline</option>
-                  </Select>
-                </LabelWrapper>
-                <LabelWrapper label="Cancellation Reference Person">
-                  <UserSelector
-                    data={cancellationReferencePerson}
-                    update={setCancelattionReferencePerson}
-                  />
-                </LabelWrapper>
+        {props.data && (
+          <TabItem title="Cancellation" className="align-center flex flex-col">
+            {props.data?.cancellation || showCancellationForm ? (
+              <div>
+                <div className="mx-auto grid max-w-[400px] grid-cols-1 gap-5">
+                  <LabelWrapper label="Refund Amount">
+                    <TextInput
+                      type="numeric"
+                      inputMode="numeric"
+                      id="refundAmount"
+                      name="refundAmount"
+                    ></TextInput>
+                  </LabelWrapper>
+                  <LabelWrapper label="Refund Amount">
+                    <Select id="refundStatus" name="refundStatus">
+                      <option value="">Select Refund Status</option>
+                      <option value="Pending">Pending</option>
+                      <option value="Completed">Completed</option>
+                    </Select>
+                  </LabelWrapper>
+                  <LabelWrapper label="Cancellation Type">
+                    <Select id="cancellationType" name="cancellationType">
+                      <option value="">Select Cancellation Type</option>
+                      <option value="Online">Online</option>
+                      <option value="Offline">Offline</option>
+                    </Select>
+                  </LabelWrapper>
+                  <LabelWrapper label="Cancellation Reference Person">
+                    <UserSelector
+                      data={cancellationReferencePerson}
+                      update={setCancelattionReferencePerson}
+                    />
+                  </LabelWrapper>
+                </div>
+                <div className="mt-10 flex flex-row justify-end">
+                  <MyButton
+                    color="red"
+                    loading={cancellationLoading}
+                    onClick={saveCancellationData}
+                  >
+                    Save Cancellation Data
+                  </MyButton>
+                </div>
               </div>
-              <div className="mt-10 flex flex-row justify-end">
-                <MyButton
-                  color="red"
-                  loading={cancellationLoading}
-                  onClick={saveCancellationData}
-                >
-                  Save Cancellation Data
-                </MyButton>
-              </div>
-            </div>
-          ) : (
-            <Button color="red" onClick={() => setShowCancellationForm(true)}>
-              Cancel Booking
-            </Button>
-          )}
-        </TabItem>
+            ) : (
+              <Button color="red" onClick={() => setShowCancellationForm(true)}>
+                Cancel Booking
+              </Button>
+            )}
+          </TabItem>
+        )}
       </Tabs>
     </form>
   );
