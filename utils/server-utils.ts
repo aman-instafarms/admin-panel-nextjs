@@ -506,6 +506,7 @@ export function parseUserFormData(formData: FormData): UserData {
   const role = rolesEnum.enumValues.find(
     (x) => x === parseString(formData.get("role")?.toString()),
   );
+  const mobileNumber = parseString(formData.get("mobileNumber")?.toString());
 
   if (!firstName) {
     throw new Error("Name missing.");
@@ -516,12 +517,15 @@ export function parseUserFormData(formData: FormData): UserData {
   if (!role) {
     throw new Error("Invalid role.");
   }
+  if (!mobileNumber) {
+    throw new Error("Mobile Number missing.");
+  }
 
   return {
     id: v4(),
     firstName,
     lastName: parseString(formData.get("lastName")?.toString()),
-    mobileNumber: parseString(formData.get("mobileNumber")?.toString()),
+    mobileNumber,
     whatsappNumber: parseString(formData.get("whatsappNumber")?.toString()),
     email: email.toLowerCase(),
     role,

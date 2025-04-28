@@ -12,6 +12,7 @@ import {
 import { userFields } from "@/drizzle/fields";
 import { parseString, parseUserFormData } from "@/utils/server-utils";
 import { isAdmin } from "@/utils/admin-only";
+import { v4 } from "uuid";
 
 export const createUser = async (
   formData: FormData,
@@ -27,6 +28,7 @@ export const createUser = async (
     return await db
       .insert(users)
       .values({
+        id: v4(),
         firstName,
         lastName,
         mobileNumber,

@@ -243,7 +243,7 @@ export interface UserData {
   id: string;
   firstName: string;
   lastName: string | null;
-  mobileNumber: string | null;
+  mobileNumber: string;
   whatsappNumber: string | null;
   email: string;
   role: UserRole;

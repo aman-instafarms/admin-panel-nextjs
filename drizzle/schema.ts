@@ -57,7 +57,7 @@ export const users = pgTable(
     id: uuid("id").notNull(),
     firstName: text("firstName").notNull(),
     lastName: text("lastName"),
-    mobileNumber: varchar("mobileNumber", { length: 256 }),
+    mobileNumber: varchar("mobileNumber", { length: 256 }).notNull().unique(),
     whatsappNumber: varchar("whatsappNumber", { length: 256 }),
     email: varchar("email", { length: 256 }).notNull(),
     role: rolesEnum("role").notNull(),
@@ -507,9 +507,4 @@ export const ezeeWebhookData = pgTable("ezWebhookData", {
   createdAt: timestamp({ mode: "string", withTimezone: true })
     .notNull()
     .defaultNow(),
-});
-
-export const firebaseUserMappings = pgTable("firebaseUserMappings", {
-  firebaseId: text().primaryKey(),
-  userId: uuid().notNull().defaultRandom().unique(),
 });
