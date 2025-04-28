@@ -12,10 +12,11 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
+import Link from "next/link";
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>();
   const router = useRouter();
 
   useEffect(() => {
@@ -51,15 +52,18 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-white px-4 py-24 dark:bg-gray-900">
-      {user ? (
-        <h4 className="text-xl text-white">
-          This account does not have admin access.
-        </h4>
-      ) : (
-        <Button size="xl" disabled={loading} onClick={handleLogin}>
-          {loading ? "Logging in..." : "Login with Google"}
-        </Button>
-      )}
+      {user !== undefined &&
+        (user ? (
+          <Link href="/admin">
+            <h4 className="rounded-lg bg-blue-600 p-3 text-white">
+              Open Admin Panel
+            </h4>
+          </Link>
+        ) : (
+          <Button size="xl" disabled={loading} onClick={handleLogin}>
+            {loading ? "Logging in..." : "Login with Google"}
+          </Button>
+        ))}
     </main>
   );
 }

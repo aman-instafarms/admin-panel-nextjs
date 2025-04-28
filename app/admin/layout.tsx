@@ -1,6 +1,5 @@
 import AdminSidebar from "@/components/Sidebar";
 import { isAdmin } from "@/utils/admin-only";
-import { redirect } from "next/navigation";
 import React from "react";
 
 export default async function AdminLayout({
@@ -11,7 +10,11 @@ export default async function AdminLayout({
   const admin = await isAdmin();
 
   if (!admin) {
-    redirect("/");
+    return (
+      <div className="m-10 flex h-full w-full flex-row items-center text-center text-white">
+        <h4 className="mx-auto">This account does not have admin access.</h4>
+      </div>
+    );
   }
 
   return (
