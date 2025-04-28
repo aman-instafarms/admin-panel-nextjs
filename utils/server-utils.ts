@@ -15,7 +15,7 @@ import {
 } from "./types";
 import { DateTime } from "luxon";
 import { v4 } from "uuid";
-import { SpecialDateData } from "@/actions/propertyActions";
+import { SpecialDateData } from "./types";
 import {
   bookingTypeEnum,
   cancellationTypeEnum,

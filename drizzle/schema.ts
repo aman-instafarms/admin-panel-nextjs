@@ -14,14 +14,23 @@ import {
   foreignKey,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
-import { ActivityData, AmenityData } from "@/utils/types";
+import {
+  ActivityData,
+  AmenityData,
+  bookingTypeOptions,
+  cancellationTypeOptions,
+  genderOptions,
+  paymentModeOptions,
+  paymentTypeOptions,
+  refundStatusOptions,
+  roleOptions,
+  transactionTypeOptions,
+  webhookStatusOptions,
+} from "@/utils/types";
 
-export const rolesEnum = pgEnum("role", ["Owner", "Manager", "Caretaker"]);
+export const rolesEnum = pgEnum("role", roleOptions);
 
-export const webhookStatusEnum = pgEnum("webhookstatus", [
-  "PENDING",
-  "PROCESSED",
-]);
+export const webhookStatusEnum = pgEnum("webhookstatus", webhookStatusOptions);
 
 export const propertyTypes = pgTable("propertyTypes", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -45,7 +54,7 @@ export const amenities = pgTable("amenities", {
 export const users = pgTable(
   "users",
   {
-    id: uuid("id").notNull().defaultRandom(),
+    id: uuid("id").notNull(),
     firstName: text("firstName").notNull(),
     lastName: text("lastName"),
     mobileNumber: varchar("mobileNumber", { length: 256 }),
@@ -358,7 +367,7 @@ export const admins = pgTable("admins", {
   phoneNumber: text(),
 });
 
-export const genderEnum = pgEnum("gender", ["Male", "Female"]);
+export const genderEnum = pgEnum("gender", genderOptions);
 
 export const customers = pgTable("customers", {
   id: uuid().primaryKey().defaultRandom(),
@@ -370,14 +379,11 @@ export const customers = pgTable("customers", {
   gender: genderEnum("gender").notNull(),
 });
 
-export const refundStatusEnum = pgEnum("refundStatusEnum", [
-  "Pending",
-  "Completed",
-]);
-export const cancellationTypeEnum = pgEnum("cancellationTypeEnum", [
-  "Online",
-  "Offline",
-]);
+export const refundStatusEnum = pgEnum("refundStatusEnum", refundStatusOptions);
+export const cancellationTypeEnum = pgEnum(
+  "cancellationTypeEnum",
+  cancellationTypeOptions,
+);
 
 export const cancellations = pgTable(
   "cancellations",
@@ -399,7 +405,7 @@ export const cancellations = pgTable(
   ],
 );
 
-export const bookingTypeEnum = pgEnum("bookingType", ["Online", "Offline"]);
+export const bookingTypeEnum = pgEnum("bookingType", bookingTypeOptions);
 
 export const bookings = pgTable(
   "bookings",
@@ -444,15 +450,12 @@ export const bookings = pgTable(
   ],
 );
 
-export const transactionTypeEnum = pgEnum("transactionTypeEnum", [
-  "Credit",
-  "Debit",
-]);
-export const paymentTypeEnum = pgEnum("paymentTypeEnum", [
-  "Security Deposit",
-  "Rent",
-]);
-export const paymentModeEnum = pgEnum("paymentModeEnum", ["Cash", "Online"]);
+export const transactionTypeEnum = pgEnum(
+  "transactionTypeEnum",
+  transactionTypeOptions,
+);
+export const paymentTypeEnum = pgEnum("paymentTypeEnum", paymentTypeOptions);
+export const paymentModeEnum = pgEnum("paymentModeEnum", paymentModeOptions);
 
 export const payments = pgTable(
   "payments",
@@ -501,5 +504,12 @@ export const ezeeWebhookData = pgTable("ezWebhookData", {
   id: uuid().primaryKey().defaultRandom(),
   reqBody: json(),
   status: text().default("PENDING").notNull(),
-  createdAt: timestamp().defaultNow(),
+  createdAt: timestamp({ mode: "string", withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export const firebaseUserMappings = pgTable("firebaseUserMappings", {
+  firebaseId: text().primaryKey(),
+  userId: uuid().notNull().defaultRandom().unique(),
 });

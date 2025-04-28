@@ -63,6 +63,11 @@ export default function AdminSidebar() {
             </SidebarItem>
           </SidebarCollapse>
         </SidebarItemGroup>
+        <SidebarItemGroup>
+          <SidebarItem href="/admin/ezeeWebhook" icon={HiInformationCircle}>
+            Ezee Webhook
+          </SidebarItem>
+        </SidebarItemGroup>
       </SidebarItems>
     </Sidebar>
   );

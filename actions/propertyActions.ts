@@ -18,17 +18,6 @@ import {
 import { _propertyFields } from "@/drizzle/fields";
 import { isAdmin } from "@/utils/admin-only";
 
-export interface SpecialDateData {
-  id: string;
-  date: string;
-  price: number | null;
-  adultExtraGuestCharge: number | null;
-  childExtraGuestCharge: number | null;
-  infantExtraGuestCharge: number | null;
-  baseGuestCount: number | null;
-  discount: number | null;
-}
-
 export const createProperty = async (
   formData: FormData,
 ): Promise<ServerActionResult> => {

@@ -1,13 +1,12 @@
-import {
-  bookingTypeEnum,
-  cancellationTypeEnum,
-  genderEnum,
-  paymentModeEnum,
-  paymentTypeEnum,
-  refundStatusEnum,
-  rolesEnum,
-  transactionTypeEnum,
-} from "@/drizzle/schema";
+export const roleOptions = ["Owner", "Manager", "Caretaker"] as const;
+export const webhookStatusOptions = ["PENDING", "PROCESSED"] as const;
+export const genderOptions = ["Male", "Female"] as const;
+export const refundStatusOptions = ["Pending", "Completed"] as const;
+export const cancellationTypeOptions = ["Online", "Offline"] as const;
+export const bookingTypeOptions = ["Online", "Offline"] as const;
+export const transactionTypeOptions = ["Credit", "Debit"] as const;
+export const paymentTypeOptions = ["Security Deposit", "Rent"] as const;
+export const paymentModeOptions = ["Cash", "Online"] as const;
 
 export interface ServerActionResult {
   success?: string;
@@ -238,7 +237,7 @@ export interface StateData {
   state: string;
 }
 
-export type UserRole = (typeof rolesEnum.enumValues)[number];
+export type UserRole = (typeof roleOptions)[number];
 
 export interface UserData {
   id: string;
@@ -250,11 +249,11 @@ export interface UserData {
   role: UserRole;
 }
 
-export type Gender = (typeof genderEnum.enumValues)[number];
+export type Gender = (typeof genderOptions)[number];
 
-export type RefundStatus = (typeof refundStatusEnum.enumValues)[number];
-export type CancellationType = (typeof cancellationTypeEnum.enumValues)[number];
-export type BookingType = (typeof bookingTypeEnum.enumValues)[number];
+export type RefundStatus = (typeof refundStatusOptions)[number];
+export type CancellationType = (typeof cancellationTypeOptions)[number];
+export type BookingType = (typeof bookingTypeOptions)[number];
 
 export interface _BookingData {
   id: string;
@@ -306,9 +305,9 @@ export interface BookingData extends _BookingData {
   customer: CustomerData | null;
 }
 
-export type TransactionType = (typeof transactionTypeEnum.enumValues)[number];
-export type PaymentType = (typeof paymentTypeEnum.enumValues)[number];
-export type PaymentMode = (typeof paymentModeEnum.enumValues)[number];
+export type TransactionType = (typeof transactionTypeOptions)[number];
+export type PaymentType = (typeof paymentTypeOptions)[number];
+export type PaymentMode = (typeof paymentModeOptions)[number];
 
 export interface _PaymentData extends Omit<BankDetail, "id"> {
   id: string;
@@ -396,4 +395,15 @@ export interface Manager {
 export interface Caretaker {
   propertyId: string;
   caretakerId: string;
+}
+
+export interface SpecialDateData {
+  id: string;
+  date: string;
+  price: number | null;
+  adultExtraGuestCharge: number | null;
+  childExtraGuestCharge: number | null;
+  infantExtraGuestCharge: number | null;
+  baseGuestCount: number | null;
+  discount: number | null;
 }

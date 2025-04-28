@@ -1,10 +1,7 @@
 "use client";
 
-import {
-  createProperty,
-  editProperty,
-  SpecialDateData,
-} from "@/actions/propertyActions";
+import { createProperty, editProperty } from "@/actions/propertyActions";
+import { SpecialDateData } from "@/utils/types";
 import AreaSelector from "@/components/AreaSelector";
 import LabelWrapper from "@/components/LabelWrapper";
 import MyButton from "@/components/MyButton";

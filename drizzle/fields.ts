@@ -7,6 +7,7 @@ import {
   cancellations,
   cities,
   customers,
+  ezeeWebhookData,
   payments,
   properties,
   propertyTypes,
@@ -334,4 +335,11 @@ export const paymentFields = {
   referencePerson: {
     ...userFields,
   },
+};
+
+export const ezeeWebhookFields = {
+  id: ezeeWebhookData.id,
+  reqBody: ezeeWebhookData.reqBody,
+  status: ezeeWebhookData.status,
+  createdAt: ezeeWebhookData.createdAt,
 };
