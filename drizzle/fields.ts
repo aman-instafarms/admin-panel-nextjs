@@ -221,7 +221,6 @@ export const userFields = {
   email: users.email,
   mobileNumber: users.mobileNumber,
   whatsappNumber: users.whatsappNumber,
-  role: users.role,
 };
 
 export const customerFields = {
@@ -246,7 +245,6 @@ export const _bookingFields = {
   checkinDate: bookings.checkinDate,
   checkoutDate: bookings.checkoutDate,
   bookingCreatorId: bookings.bookingCreatorId,
-  bookingCreatorRole: bookings.bookingCreatorRole,
   bookingRemarks: bookings.bookingRemarks,
   specialRequests: bookings.specialRequests,
 
@@ -296,7 +294,6 @@ export const bookingFields = {
     refundStatus: cancellations.refundStatus,
     cancellationType: cancellations.cancellationType,
     referencePersonId: cancellations.referencePersonId,
-    referencePersonRole: cancellations.referencePersonRole,
   },
   customer: {
     id: customers.id,
@@ -319,7 +316,6 @@ export const _paymentFields = {
   amount: payments.amount,
   paymentDate: payments.paymentDate,
   referencePersonId: payments.referencePersonId,
-  referencePersonRole: payments.referencePersonRole,
   paymentType: payments.paymentType,
   paymentMode: payments.paymentMode,
 

@@ -11,12 +11,7 @@ import LabelWrapper from "@/components/LabelWrapper";
 import MyButton from "@/components/MyButton";
 import PropertySelector from "@/components/PropertySelector";
 import UserSelector from "@/components/UserSelector";
-import {
-  _PaymentData,
-  BookingData,
-  PaymentMode,
-  UserRole,
-} from "@/utils/types";
+import { _PaymentData, BookingData, PaymentMode } from "@/utils/types";
 import { parseServerActionResult } from "@/utils/utils";
 import {
   Button,
@@ -46,7 +41,6 @@ const createNewPayment = (): _PaymentData => ({
   transactionType: "Credit",
   amount: 0,
   referencePersonId: "",
-  referencePersonRole: "Owner",
   paymentMode: "Cash",
   paymentType: "Rent",
   bankAccountHolderName: "",
@@ -68,27 +62,16 @@ export default function BookingEditor(props: BookingEditorProps) {
   const [customerId, setCustomerId] = useState<string | null>(
     props.data ? props.data.customerId : null,
   );
-  const [bookingCreator, setBookingCreator] = useState<{
-    id: string;
-    role: UserRole;
-  } | null>(
-    props.data
-      ? { id: props.data.bookingCreatorId, role: props.data.bookingCreatorRole }
-      : null,
+  const [bookingCreator, setBookingCreator] = useState<string | null>(
+    props.data ? props.data.bookingCreatorId : null,
   );
   const [checkinDate, setCheckinDate] = useState<Date | null>(null);
   const [checkoutDate, setCheckoutDate] = useState<Date | null>(null);
   const [payments, setPayments] = useState<_PaymentData[]>([]);
   const [cancellationReferencePerson, setCancelattionReferencePerson] =
-    useState<{
-      id: string;
-      role: UserRole;
-    } | null>(
+    useState<string | null>(
       props.data?.cancellation
-        ? {
-            id: props.data.cancellation.referencePersonId,
-            role: props.data.cancellation.referencePersonRole,
-          }
+        ? props.data.cancellation.referencePersonId
         : null,
     );
 
@@ -102,8 +85,7 @@ export default function BookingEditor(props: BookingEditorProps) {
     const formData = new FormData(formEl);
     formData.set("propertyId", propertyId || "");
     formData.set("customerId", customerId || "");
-    formData.set("bookingCreatorId", bookingCreator?.id || "");
-    formData.set("bookingCreatorRole", bookingCreator?.role || "");
+    formData.set("bookingCreatorId", bookingCreator || "");
     const checkinDt = checkinDate && DateTime.fromJSDate(checkinDate);
     const checkoutDt = checkoutDate && DateTime.fromJSDate(checkoutDate);
     formData.set(
@@ -117,10 +99,6 @@ export default function BookingEditor(props: BookingEditorProps) {
     payments.forEach((p) => {
       formData.set(`payment-${p.id}`, p.paymentDate);
       formData.set(`payment-referencePersonId-${p.id}`, p.referencePersonId);
-      formData.set(
-        `payment-referencePersonRole-${p.id}`,
-        p.referencePersonRole,
-      );
       formData.set(`bankName-${p.id}`, p.bankName || "");
       formData.set(
         `bankAccountHolderName-${p.id}`,
@@ -161,11 +139,7 @@ export default function BookingEditor(props: BookingEditorProps) {
     const formData = new FormData(formEl);
     formData.set(
       "cancellationReferencePersonId",
-      cancellationReferencePerson?.id || "",
-    );
-    formData.set(
-      "cancellationReferencePersonRole",
-      cancellationReferencePerson?.role || "",
+      cancellationReferencePerson || "",
     );
     startCancellationTransition(() => {
       if (props.data) {
@@ -189,10 +163,7 @@ export default function BookingEditor(props: BookingEditorProps) {
     if (props.data) {
       setPropertyId(props.data.propertyId);
       setCustomerId(props.data.customerId);
-      setBookingCreator({
-        id: props.data.bookingCreatorId,
-        role: props.data.bookingCreatorRole,
-      });
+      setBookingCreator(props.data.bookingCreatorId);
       if (props.paymentData) {
         setPayments(props.paymentData);
       }
@@ -763,26 +734,17 @@ function PaymentRow({
       </td>
       <td className="">
         <UserSelector
-          data={
-            payment.referencePersonId
-              ? {
-                  id: payment.referencePersonId,
-                  role: payment.referencePersonRole,
-                }
-              : null
-          }
+          data={payment.referencePersonId ? payment.referencePersonId : null}
           update={(data) => {
             update(
               data
                 ? {
                     ...payment,
-                    referencePersonId: data.id,
-                    referencePersonRole: data.role,
+                    referencePersonId: data,
                   }
                 : {
                     ...payment,
                     referencePersonId: "",
-                    referencePersonRole: "Owner",
                   },
             );
           }}

@@ -32,7 +32,6 @@ export const createBooking = async (
       checkinDate,
       checkoutDate,
       bookingCreatorId,
-      bookingCreatorRole,
       bookingRemarks,
       specialRequests,
       rentalCharge,
@@ -65,7 +64,6 @@ export const createBooking = async (
           checkinDate,
           checkoutDate,
           bookingCreatorId,
-          bookingCreatorRole,
           bookingRemarks,
           specialRequests,
           rentalCharge,
@@ -90,7 +88,6 @@ export const createBooking = async (
                 amount: p.amount,
                 paymentDate: p.paymentDate,
                 referencePersonId: p.referencePersonId,
-                referencePersonRole: p.referencePersonRole,
                 paymentType: p.paymentType,
                 paymentMode: p.paymentMode,
               })),
@@ -150,7 +147,6 @@ export const updateBooking = async (
               amount: p.amount,
               paymentDate: p.paymentDate,
               referencePersonId: p.referencePersonId,
-              referencePersonRole: p.referencePersonRole,
               paymentType: p.paymentType,
               paymentMode: p.paymentMode,
               bankName: p.bankName,
@@ -185,13 +181,8 @@ export const cancelBooking = async (
     if (!admin) {
       throw new Error("Unauthorized");
     }
-    const {
-      refundAmount,
-      refundStatus,
-      cancellationType,
-      referencePersonId,
-      referencePersonRole,
-    } = parseCancellationFormData(formData);
+    const { refundAmount, refundStatus, cancellationType, referencePersonId } =
+      parseCancellationFormData(formData);
 
     const res = await db
       .update(cancellations)
@@ -200,7 +191,6 @@ export const cancelBooking = async (
         refundStatus,
         cancellationType,
         referencePersonId,
-        referencePersonRole,
       })
       .where(eq(cancellations.bookingId, bookingId))
       .returning({ bookingId: cancellations.bookingId })
@@ -226,7 +216,6 @@ export const cancelBooking = async (
         refundStatus,
         cancellationType,
         referencePersonId,
-        referencePersonRole,
         bookingId,
       })
       .then(() => {

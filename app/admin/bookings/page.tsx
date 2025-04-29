@@ -25,7 +25,7 @@ import Link from "next/link";
 import { HiPencil } from "react-icons/hi";
 import Searchbar from "@/components/Searchbar";
 import { like } from "drizzle-orm/pg-core/expressions";
-import { and, eq, isNotNull, isNull, sql } from "drizzle-orm";
+import { eq, isNotNull, isNull, sql } from "drizzle-orm";
 import Pagination from "@/components/Pagination";
 
 const searchbarKeys = [
@@ -45,13 +45,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
     .leftJoin(properties, eq(bookings.propertyId, properties.id))
     .leftJoin(customers, eq(bookings.customerId, customers.id))
     .leftJoin(cancellations, eq(bookings.id, cancellations.bookingId))
-    .leftJoin(
-      users,
-      and(
-        eq(bookings.bookingCreatorId, users.id),
-        eq(bookings.bookingCreatorRole, users.role),
-      ),
-    );
+    .leftJoin(users, eq(bookings.bookingCreatorId, users.id));
 
   let queryWithFilter;
   if (filterParams) {
@@ -154,8 +148,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
                   </TableCell>
                   <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
                     {booking.bookingCreator?.firstName}{" "}
-                    {booking.bookingCreator?.lastName} - (
-                    {booking.bookingCreatorRole})
+                    {booking.bookingCreator?.lastName}
                   </TableCell>
                   <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
                     {booking.checkinDate}

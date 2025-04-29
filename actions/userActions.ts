@@ -2,7 +2,7 @@
 
 import { db } from "@/drizzle/db";
 import { and, eq, like, sql } from "drizzle-orm";
-import { rolesEnum, users } from "@/drizzle/schema";
+import { users } from "@/drizzle/schema";
 import { revalidatePath } from "next/cache";
 import {
   ServerActionResult,
@@ -22,7 +22,7 @@ export const createUser = async (
     if (!admin) {
       throw new Error("Unauthorized");
     }
-    const { firstName, lastName, mobileNumber, whatsappNumber, email, role } =
+    const { firstName, lastName, mobileNumber, whatsappNumber, email } =
       parseUserFormData(formData);
 
     return await db
@@ -32,7 +32,6 @@ export const createUser = async (
         firstName,
         lastName,
         mobileNumber,
-        role,
         whatsappNumber,
         email,
       })
@@ -43,9 +42,10 @@ export const createUser = async (
       .catch((err) => {
         console.log("DB Error: ", err);
         if (err?.constraint === "uniqueEmail") {
-          throw new Error(
-            "Email already registered with a user with this role.",
-          );
+          throw new Error("Email already registered.");
+        }
+        if (err?.constraint === "uniqueMobileNumber") {
+          throw new Error("Mobile number already registered.");
         }
         throw new Error("Database error.");
       });
@@ -67,7 +67,7 @@ export const editUser = async (
     if (!admin) {
       throw new Error("Unauthorized");
     }
-    const { firstName, lastName, mobileNumber, whatsappNumber, email, role } =
+    const { firstName, lastName, mobileNumber, whatsappNumber, email } =
       parseUserFormData(formData);
 
     if (!id) {
@@ -82,7 +82,6 @@ export const editUser = async (
         mobileNumber,
         whatsappNumber,
         email,
-        role,
       })
       .where(eq(users.id, id))
       .returning(userFields)
@@ -147,22 +146,17 @@ export const deleteUser = async (id: string): Promise<ServerActionResult> => {
 
 export const getUser = async (
   id: string,
-  _role: string,
 ): Promise<ServerSearchResult<UserData>> => {
   try {
     const admin = await isAdmin();
     if (!admin) {
       throw new Error("Unauthorized");
     }
-    const role = rolesEnum.enumValues.find((x) => x === _role);
-    if (!role) {
-      throw new Error("Invalid User Role.");
-    }
 
     return await db
       .select(userFields)
       .from(users)
-      .where(and(eq(users.id, id), eq(users.role, role)))
+      .where(and(eq(users.id, id)))
       .then((res) => {
         if (res.length === 0) {
           throw new Error("User not found");

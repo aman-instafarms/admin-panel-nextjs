@@ -20,7 +20,6 @@ export async function addCaretaker(caretaker: {
       .insert(caretakersOnProperties)
       .values({
         propertyId: caretaker.propertyId,
-        role: "Manager",
         caretakerId: caretaker.caretakerId,
       })
       .then(() => {

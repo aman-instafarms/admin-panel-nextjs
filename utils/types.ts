@@ -246,7 +246,6 @@ export interface UserData {
   mobileNumber: string;
   whatsappNumber: string | null;
   email: string;
-  role: UserRole;
 }
 
 export type Gender = (typeof genderOptions)[number];
@@ -267,7 +266,6 @@ export interface _BookingData {
   checkinDate: string;
   checkoutDate: string;
   bookingCreatorId: string;
-  bookingCreatorRole: UserRole;
   bookingRemarks: string | null;
   specialRequests: string | null;
 
@@ -316,7 +314,6 @@ export interface _PaymentData extends Omit<BankDetail, "id"> {
   amount: number;
   paymentDate: string;
   referencePersonId: string;
-  referencePersonRole: UserRole;
   paymentType: PaymentType;
   paymentMode: PaymentMode;
 }
@@ -340,7 +337,6 @@ export interface _CancellationData {
   refundStatus: RefundStatus;
   cancellationType: CancellationType;
   referencePersonId: string;
-  referencePersonRole: UserRole;
 }
 
 export interface CancellationData extends _CancellationData {

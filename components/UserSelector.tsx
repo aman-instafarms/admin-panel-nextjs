@@ -1,6 +1,6 @@
 "use client";
 
-import { UserData, UserRole } from "@/utils/types";
+import { UserData } from "@/utils/types";
 import { Card, Checkbox, Popover, Select, TextInput } from "flowbite-react";
 import { useEffect, useState, useTransition, MouseEvent } from "react";
 import toast from "react-hot-toast";
@@ -10,8 +10,8 @@ import { v4 } from "uuid";
 import { getUser, searchUser } from "@/actions/userActions";
 
 interface UserSelectorProps {
-  data: { id: string; role: string } | null;
-  update: (data: { id: string; role: UserRole } | null) => void;
+  data: string | null;
+  update: (data: string | null) => void;
   readOnly?: boolean;
 }
 
@@ -24,9 +24,7 @@ export default function UserSelector({
   const [loading, startTransition] = useTransition();
   const [uniqueId] = useState<string>(v4());
 
-  const selectedUser = searchResults.find(
-    (x) => data && x.id === data.id && x.role === data.role,
-  );
+  const selectedUser = searchResults.find((x) => data && x.id === data);
 
   const handleSearch = async (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -53,11 +51,7 @@ export default function UserSelector({
         .then((res) => {
           if (res.data) {
             // if previously selected customer is not in new results, reset
-            if (
-              !res.data.find(
-                (x) => data && x.id === data.id && x.role === data.role,
-              )
-            ) {
+            if (!res.data.find((x) => data && x.id === data)) {
               update(null);
             }
             setSearchResults(res.data);
@@ -74,7 +68,7 @@ export default function UserSelector({
     if (data) {
       startTransition(() => {
         if (data) {
-          getUser(data.id, data.role).then(({ data }) => {
+          getUser(data).then(({ data }) => {
             if (data) {
               setSearchResults([data, ...searchResults]);
             }
@@ -86,7 +80,7 @@ export default function UserSelector({
 
   const userString =
     selectedUser &&
-    `${selectedUser.firstName} ${selectedUser.lastName ? selectedUser.lastName : ""} - ${selectedUser.role}`;
+    `${selectedUser.firstName} ${selectedUser.lastName ? selectedUser.lastName : ""}`;
 
   return (
     <Popover
@@ -131,25 +125,15 @@ export default function UserSelector({
                 {searchResults.map((result) => (
                   <label key={result.id} className="flex items-center gap-4">
                     <Checkbox
-                      checked={
-                        !!data &&
-                        result.id === data.id &&
-                        result.role === data.role
-                      }
+                      checked={!!data && result.id === data}
                       onChange={() =>
                         !readOnly &&
-                        update(
-                          data &&
-                            data.id === result.id &&
-                            data.role === result.role
-                            ? null
-                            : { id: result.id, role: result.role },
-                        )
+                        update(data && data === result.id ? null : result.id)
                       }
                     />
                     <div className="flex w-full cursor-pointer flex-col">
                       <div className="font-bold">
-                        {result.firstName} {result.lastName} - {result.role}
+                        {result.firstName} {result.lastName}
                       </div>
                       <div className="flex flex-row gap-3 text-sm">
                         <div>{result.mobileNumber}</div>
@@ -165,7 +149,7 @@ export default function UserSelector({
       }
     >
       <TextInput
-        value={data ? userString || `${data.id} - ${data.role}` : ""}
+        value={data ? userString || `${data}` : ""}
         placeholder="Select User"
         readOnly
       ></TextInput>

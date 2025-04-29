@@ -23,7 +23,6 @@ import {
   paymentModeEnum,
   paymentTypeEnum,
   refundStatusEnum,
-  rolesEnum,
   transactionTypeEnum,
 } from "@/drizzle/schema";
 
@@ -503,9 +502,6 @@ export function parsePropertyFormData(formData: FormData): _PropertyData {
 export function parseUserFormData(formData: FormData): UserData {
   const firstName = parseString(formData.get("firstName")?.toString());
   const email = parseString(formData.get("email")?.toString());
-  const role = rolesEnum.enumValues.find(
-    (x) => x === parseString(formData.get("role")?.toString()),
-  );
   const mobileNumber = parseString(formData.get("mobileNumber")?.toString());
 
   if (!firstName) {
@@ -513,9 +509,6 @@ export function parseUserFormData(formData: FormData): UserData {
   }
   if (!email) {
     throw new Error("Email missing.");
-  }
-  if (!role) {
-    throw new Error("Invalid role.");
   }
   if (!mobileNumber) {
     throw new Error("Mobile Number missing.");
@@ -528,7 +521,6 @@ export function parseUserFormData(formData: FormData): UserData {
     mobileNumber,
     whatsappNumber: parseString(formData.get("whatsappNumber")?.toString()),
     email: email.toLowerCase(),
-    role,
   };
 }
 
@@ -545,9 +537,6 @@ export function parseCancellationFormData(
   const referencePersonId = parseString(
     formData.get("cancellationReferencePersonId")?.toString(),
   );
-  const referencePersonRole = rolesEnum.enumValues.find(
-    (x) => x === formData.get("cancellationReferencePersonRole")?.toString(),
-  );
 
   if (!refundAmount) {
     throw new Error("Invalid Refund Amount");
@@ -561,16 +550,12 @@ export function parseCancellationFormData(
   if (!referencePersonId) {
     throw new Error("No reference person selected");
   }
-  if (!referencePersonRole) {
-    throw new Error("Select reference person role");
-  }
 
   return {
     refundAmount,
     refundStatus,
     cancellationType,
     referencePersonId,
-    referencePersonRole,
   };
 }
 
@@ -591,13 +576,6 @@ export function parsePaymentFormData(
     const paymentDate = parseString(formData.get(`payment-${id}`)?.toString());
     const referencePersonId = parseString(
       formData.get(`payment-referencePersonId-${id}`)?.toString(),
-    );
-    const referencePersonRole = rolesEnum.enumValues.find(
-      (x) =>
-        x ===
-        parseString(
-          formData.get(`payment-referencePersonRole-${id}`)?.toString(),
-        ),
     );
     const paymentMode = paymentModeEnum.enumValues.find(
       (x) =>
@@ -620,7 +598,7 @@ export function parsePaymentFormData(
     if (!paymentDate || !DateTime.fromSQL(paymentDate).isValid) {
       throw new Error("Invalid payment date.");
     }
-    if (!referencePersonId || !referencePersonRole) {
+    if (!referencePersonId) {
       throw new Error("No reference person selected.");
     }
     if (!transactionType) {
@@ -638,7 +616,6 @@ export function parsePaymentFormData(
       transactionType: transactionType,
       amount,
       referencePersonId,
-      referencePersonRole,
       paymentType,
       paymentMode,
       bankName: parseString(formData.get(`bankName-${id}`)?.toString()),
@@ -692,9 +669,6 @@ export function parseBookingFormData(formData: FormData): _BookingData {
   );
   const bookingCreatorId = parseString(
     formData.get("bookingCreatorId")?.toString(),
-  );
-  const bookingCreatorRole = rolesEnum.enumValues.find(
-    (x) => x === parseString(formData.get("bookingCreatorRole")?.toString()),
   );
   const rentalCharge = parseNumber(formData.get("rentalCharge")?.toString());
   const extraGuestCharge = parseNumber(
@@ -750,9 +724,6 @@ export function parseBookingFormData(formData: FormData): _BookingData {
   if (!bookingCreatorId) {
     throw new Error("No booking creator selected.");
   }
-  if (!bookingCreatorRole) {
-    throw new Error("Invalid booking creator role");
-  }
   if (rentalCharge === null || rentalCharge < 0) {
     throw new Error("Enter Rental Charge");
   }
@@ -799,7 +770,6 @@ export function parseBookingFormData(formData: FormData): _BookingData {
     checkinDate,
     checkoutDate,
     bookingCreatorId,
-    bookingCreatorRole,
     bookingRemarks: parseString(formData.get("bookingRemarks")?.toString()),
     specialRequests: parseString(formData.get("specialRequests")?.toString()),
     rentalCharge,

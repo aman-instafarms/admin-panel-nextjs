@@ -105,7 +105,6 @@ export default async function Page({ params, searchParams }: ServerPageProps) {
               <TableRow>
                 <TableHeadCell>S. No.</TableHeadCell>
                 <TableHeadCell>Name</TableHeadCell>
-                <TableHeadCell>Role</TableHeadCell>
                 <TableHeadCell>Email</TableHeadCell>
                 <TableHeadCell>Phone Number</TableHeadCell>
                 <TableHeadCell>Actions</TableHeadCell>
@@ -120,9 +119,6 @@ export default async function Page({ params, searchParams }: ServerPageProps) {
                   <TableCell>{offset + index + 1}</TableCell>
                   <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
                     {user.firstName} {user.lastName}
-                  </TableCell>
-                  <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
-                    {user.role}
                   </TableCell>
                   <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
                     {user.email}

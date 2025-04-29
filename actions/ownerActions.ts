@@ -20,7 +20,6 @@ export async function addOwner(owner: {
       .insert(ownersOnProperties)
       .values({
         propertyId: owner.propertyId,
-        role: "Owner",
         ownerId: owner.ownerId,
       })
       .then(() => {

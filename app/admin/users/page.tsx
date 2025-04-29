@@ -1,8 +1,8 @@
 import { db } from "@/drizzle/db";
 import { userFields } from "@/drizzle/fields";
-import { rolesEnum, users } from "@/drizzle/schema";
+import { users } from "@/drizzle/schema";
 import { parseFilterParams, parseLimitOffset } from "@/utils/server-utils";
-import { ServerPageProps, UserData } from "@/utils/types";
+import { ServerPageProps } from "@/utils/types";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -20,10 +20,10 @@ import { HiPencil } from "react-icons/hi";
 import DeleteUserButton from "./DeleteAdminButton";
 import Searchbar from "@/components/Searchbar";
 import { like } from "drizzle-orm/pg-core/expressions";
-import { eq, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import Pagination from "@/components/Pagination";
 
-const searchbarKeys = ["Name", "Email", "Role"];
+const searchbarKeys = ["Name", "Email"];
 
 export default async function Page({ searchParams }: ServerPageProps) {
   const { limit, offset } = parseLimitOffset(await searchParams);
@@ -44,12 +44,6 @@ export default async function Page({ searchParams }: ServerPageProps) {
       queryWithFilter = query.where(
         like(users.email, `${filterParams.searchValue}%`),
       );
-    } else if (filterParams.searchKey === "Role") {
-      if (rolesEnum.enumValues.find((x) => x === filterParams.searchValue)) {
-        queryWithFilter = query.where(
-          eq(users.role, filterParams.searchValue as UserData["role"]),
-        );
-      }
     }
   }
 
@@ -93,7 +87,6 @@ export default async function Page({ searchParams }: ServerPageProps) {
               <TableRow>
                 <TableHeadCell>S. No.</TableHeadCell>
                 <TableHeadCell>Name</TableHeadCell>
-                <TableHeadCell>Role</TableHeadCell>
                 <TableHeadCell>Email</TableHeadCell>
                 <TableHeadCell>Phone Number</TableHeadCell>
                 <TableHeadCell>Actions</TableHeadCell>
@@ -109,9 +102,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
                   <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
                     {user.firstName} {user.lastName}
                   </TableCell>
-                  <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
-                    {user.role}
-                  </TableCell>
+
                   <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
                     {user.email}
                   </TableCell>

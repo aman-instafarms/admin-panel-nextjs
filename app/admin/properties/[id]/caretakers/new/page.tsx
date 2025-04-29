@@ -62,7 +62,7 @@ export default async function Page({ searchParams, params }: ServerPageProps) {
       eq(users.id, caretakersOnProperties.caretakerId),
     );
 
-  const filters = [eq(users.role, "Caretaker")];
+  const filters = [];
 
   if (filterParams) {
     if (filterParams.searchKey === "Name") {
@@ -77,8 +77,7 @@ export default async function Page({ searchParams, params }: ServerPageProps) {
     }
   }
 
-  const data = await query
-    .where(and(...filters))
+  const data = await (filters.length ? query.where(and(...filters)) : query)
     .limit(limit)
     .offset(offset)
     .catch((err) => {
@@ -124,7 +123,6 @@ export default async function Page({ searchParams, params }: ServerPageProps) {
               <TableRow>
                 <TableHeadCell>S. No.</TableHeadCell>
                 <TableHeadCell>Name</TableHeadCell>
-                <TableHeadCell>Role</TableHeadCell>
                 <TableHeadCell>Email</TableHeadCell>
                 <TableHeadCell>Phone Number</TableHeadCell>
                 <TableHeadCell>Actions</TableHeadCell>
@@ -139,9 +137,6 @@ export default async function Page({ searchParams, params }: ServerPageProps) {
                   <TableCell>{offset + index + 1}</TableCell>
                   <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
                     {user.firstName} {user.lastName}
-                  </TableCell>
-                  <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
-                    {user.role}
                   </TableCell>
                   <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
                     {user.email}

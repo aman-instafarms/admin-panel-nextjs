@@ -20,7 +20,6 @@ export async function addManager(manager: {
       .insert(managersOnProperties)
       .values({
         propertyId: manager.propertyId,
-        role: "Manager",
         managerId: manager.managerId,
       })
       .then(() => {

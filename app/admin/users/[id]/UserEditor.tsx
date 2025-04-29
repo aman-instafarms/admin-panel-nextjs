@@ -4,7 +4,7 @@ import { createUser, editUser } from "@/actions/userActions";
 import MyButton from "@/components/MyButton";
 import { UserData } from "@/utils/types";
 import { parseServerActionResult } from "@/utils/utils";
-import { Label, Select, TextInput } from "flowbite-react";
+import { Label, TextInput } from "flowbite-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useTransition } from "react";
 import toast from "react-hot-toast";
@@ -58,9 +58,6 @@ export default function UserEditor(props: UserEditorProps) {
       el.value = props.data.mobileNumber || "";
       el = document.getElementById("whatsappNumber") as HTMLInputElement;
       el.value = props.data.whatsappNumber || "";
-
-      const selectEl = document.getElementById("role") as HTMLSelectElement;
-      selectEl.value = props.data.role || "";
     }
   }, [props.data]);
 
@@ -102,17 +99,7 @@ export default function UserEditor(props: UserEditorProps) {
             required
           />
         </div>
-        <div>
-          <div className="mb-2 block">
-            <Label htmlFor="email1">User Role</Label>
-          </div>
-          <Select id="role" name="role" required>
-            <option value="">Select Role</option>
-            <option value="Owner">Owner</option>
-            <option value="Manager">Manager</option>
-            <option value="Caretaker">Caretaker</option>
-          </Select>
-        </div>
+
         <div>
           <div className="mb-2 block">
             <Label htmlFor="email1">User Mobile Number</Label>

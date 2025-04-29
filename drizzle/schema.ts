@@ -9,11 +9,9 @@ import {
   primaryKey,
   date,
   json,
-  uniqueIndex,
   timestamp,
-  foreignKey,
 } from "drizzle-orm/pg-core";
-import { relations, sql } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
   ActivityData,
   AmenityData,
@@ -51,24 +49,16 @@ export const amenities = pgTable("amenities", {
   amenity: text("amenity").notNull(),
 });
 
-export const users = pgTable(
-  "users",
-  {
-    id: uuid("id").notNull(),
-    firstName: text("firstName").notNull(),
-    lastName: text("lastName"),
-    mobileNumber: varchar("mobileNumber", { length: 256 }).notNull().unique(),
-    whatsappNumber: varchar("whatsappNumber", { length: 256 }),
-    email: varchar("email", { length: 256 }).notNull(),
-    role: rolesEnum("role").notNull(),
-  },
-  (table) => {
-    return [
-      primaryKey({ columns: [table.id, table.role] }),
-      uniqueIndex("uniqueEmail").on(sql`lower(${table.email})`, table.role),
-    ];
-  },
-);
+export const users = pgTable("users", {
+  id: uuid("id").notNull().primaryKey().defaultRandom(),
+  firstName: text("firstName").notNull(),
+  lastName: text("lastName"),
+  mobileNumber: varchar("mobileNumber", { length: 256 })
+    .notNull()
+    .unique("unique_mobileNumber"),
+  whatsappNumber: varchar("whatsappNumber", { length: 256 }),
+  email: varchar("email", { length: 256 }).notNull().unique("unique_email"),
+});
 
 export const usersRelations = relations(users, ({ many }) => ({
   ownedproperties: many(ownersOnProperties),
@@ -81,79 +71,26 @@ export const ownersOnProperties = pgTable(
   {
     ownerId: uuid("ownerId").notNull(),
     propertyId: uuid("propertyId").notNull(),
-    role: rolesEnum("role").notNull(),
   },
-  (table) => [primaryKey({ columns: [table.ownerId, table.role] })],
-);
-
-export const ownersOnPropertiesRelations = relations(
-  ownersOnProperties,
-  ({ one }) => ({
-    owner: one(users, {
-      fields: [ownersOnProperties.ownerId, ownersOnProperties.role],
-      references: [users.id, users.role],
-    }),
-    property: one(properties, {
-      fields: [ownersOnProperties.propertyId],
-      references: [properties.id],
-    }),
-  }),
+  (table) => [primaryKey({ columns: [table.ownerId, table.propertyId] })],
 );
 
 export const managersOnProperties = pgTable(
   "managersOnProperties",
   {
     managerId: uuid("managerId").notNull(),
-    role: rolesEnum("role").notNull(),
     propertyId: uuid("propertyId").notNull(),
   },
-  (table) => {
-    return {
-      pk: primaryKey({ columns: [table.managerId, table.propertyId] }),
-    };
-  },
-);
-
-export const managersOnPropertiesRelations = relations(
-  managersOnProperties,
-  ({ one }) => ({
-    owner: one(users, {
-      fields: [managersOnProperties.managerId, managersOnProperties.role],
-      references: [users.id, users.role],
-    }),
-    property: one(properties, {
-      fields: [managersOnProperties.propertyId],
-      references: [properties.id],
-    }),
-  }),
+  (table) => [primaryKey({ columns: [table.managerId, table.propertyId] })],
 );
 
 export const caretakersOnProperties = pgTable(
   "caretakersOnProperties",
   {
     caretakerId: uuid("caretakerId").notNull(),
-    role: rolesEnum("role").notNull(),
     propertyId: uuid("propertyId").notNull(),
   },
-  (table) => {
-    return {
-      pk: primaryKey({ columns: [table.caretakerId, table.propertyId] }),
-    };
-  },
-);
-
-export const caretakersOnPropertiesRelations = relations(
-  caretakersOnProperties,
-  ({ one }) => ({
-    owner: one(users, {
-      fields: [caretakersOnProperties.caretakerId, caretakersOnProperties.role],
-      references: [users.id, users.role],
-    }),
-    property: one(properties, {
-      fields: [caretakersOnProperties.propertyId],
-      references: [properties.id],
-    }),
-  }),
+  (table) => [primaryKey({ columns: [table.caretakerId, table.propertyId] })],
 );
 
 export const properties = pgTable("properties", {
@@ -385,70 +322,54 @@ export const cancellationTypeEnum = pgEnum(
   cancellationTypeOptions,
 );
 
-export const cancellations = pgTable(
-  "cancellations",
-  {
-    bookingId: uuid()
-      .primaryKey()
-      .references(() => bookings.id),
-    refundAmount: integer().notNull(),
-    refundStatus: refundStatusEnum().notNull(),
-    cancellationType: cancellationTypeEnum().notNull(),
-    referencePersonId: uuid().notNull(),
-    referencePersonRole: rolesEnum().notNull(),
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.referencePersonId, table.referencePersonRole],
-      foreignColumns: [users.id, users.role],
-    }),
-  ],
-);
+export const cancellations = pgTable("cancellations", {
+  bookingId: uuid()
+    .primaryKey()
+    .references(() => bookings.id),
+  refundAmount: integer().notNull(),
+  refundStatus: refundStatusEnum().notNull(),
+  cancellationType: cancellationTypeEnum().notNull(),
+  referencePersonId: uuid()
+    .notNull()
+    .references(() => users.id),
+});
 
 export const bookingTypeEnum = pgEnum("bookingType", bookingTypeOptions);
 
-export const bookings = pgTable(
-  "bookings",
-  {
-    id: uuid().primaryKey().defaultRandom(),
-    propertyId: uuid()
-      .notNull()
-      .references(() => properties.id),
-    customerId: uuid()
-      .notNull()
-      .references(() => customers.id),
-    bookingType: bookingTypeEnum("bookingType").notNull(),
-    bookingSource: text(),
-    adultCount: integer().notNull(),
-    childrenCount: integer().notNull(),
-    infantCount: integer().notNull(),
-    checkinDate: date({ mode: "string" }).notNull(),
-    checkoutDate: date({ mode: "string" }).notNull(),
-    bookingCreatorId: uuid().notNull(),
-    bookingCreatorRole: rolesEnum().notNull(),
-    bookingRemarks: text(),
-    specialRequests: text(),
+export const bookings = pgTable("bookings", {
+  id: uuid().primaryKey().defaultRandom(),
+  propertyId: uuid()
+    .notNull()
+    .references(() => properties.id),
+  customerId: uuid()
+    .notNull()
+    .references(() => customers.id),
+  bookingType: bookingTypeEnum("bookingType").notNull(),
+  bookingSource: text(),
+  adultCount: integer().notNull(),
+  childrenCount: integer().notNull(),
+  infantCount: integer().notNull(),
+  checkinDate: date({ mode: "string" }).notNull(),
+  checkoutDate: date({ mode: "string" }).notNull(),
+  bookingCreatorId: uuid()
+    .notNull()
+    .references(() => users.id),
+  bookingRemarks: text(),
+  specialRequests: text(),
 
-    // commercial data
-    rentalCharge: integer().notNull(),
-    extraGuestCharge: integer().notNull(),
-    ownerDiscount: integer().notNull(),
-    multipleNightsDiscount: integer().notNull(),
-    couponDiscount: integer().notNull(),
-    totalDiscount: integer().notNull(),
-    gstAmount: integer().notNull(),
-    gstPercentage: integer().notNull(),
-    otaCommission: integer().notNull(),
-    paymentGatewayCharge: integer().notNull(),
-    netOwnerRevenue: integer().notNull(),
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.bookingCreatorId, table.bookingCreatorRole],
-      foreignColumns: [users.id, users.role],
-    }),
-  ],
-);
+  // commercial data
+  rentalCharge: integer().notNull(),
+  extraGuestCharge: integer().notNull(),
+  ownerDiscount: integer().notNull(),
+  multipleNightsDiscount: integer().notNull(),
+  couponDiscount: integer().notNull(),
+  totalDiscount: integer().notNull(),
+  gstAmount: integer().notNull(),
+  gstPercentage: integer().notNull(),
+  otaCommission: integer().notNull(),
+  paymentGatewayCharge: integer().notNull(),
+  netOwnerRevenue: integer().notNull(),
+});
 
 export const transactionTypeEnum = pgEnum(
   "transactionTypeEnum",
@@ -457,48 +378,30 @@ export const transactionTypeEnum = pgEnum(
 export const paymentTypeEnum = pgEnum("paymentTypeEnum", paymentTypeOptions);
 export const paymentModeEnum = pgEnum("paymentModeEnum", paymentModeOptions);
 
-export const payments = pgTable(
-  "payments",
-  {
-    id: uuid().primaryKey().defaultRandom(),
-    bookingId: uuid()
-      .notNull()
-      .references(() => bookings.id),
-    transactionType: transactionTypeEnum().notNull(),
-    amount: integer().notNull(),
-    paymentDate: timestamp({ mode: "string" }).notNull(),
-    referencePersonId: uuid().notNull(),
-    referencePersonRole: rolesEnum().notNull(),
-    paymentType: paymentTypeEnum().notNull(),
-    paymentMode: paymentModeEnum().notNull(),
-    paymentCreator: uuid(),
-    paymentCreatorRole: rolesEnum(),
-    paymentDeletor: uuid(),
-    paymentDeletorRole: rolesEnum(),
-    isDeleted: boolean().notNull().default(false),
+export const payments = pgTable("payments", {
+  id: uuid().primaryKey().defaultRandom(),
+  bookingId: uuid()
+    .notNull()
+    .references(() => bookings.id),
+  transactionType: transactionTypeEnum().notNull(),
+  amount: integer().notNull(),
+  paymentDate: timestamp({ mode: "string" }).notNull(),
+  referencePersonId: uuid()
+    .notNull()
+    .references(() => users.id),
+  paymentType: paymentTypeEnum().notNull(),
+  paymentMode: paymentModeEnum().notNull(),
+  paymentCreator: uuid(),
+  paymentDeletor: uuid(),
+  isDeleted: boolean().notNull().default(false),
 
-    // Bank Details
-    bankAccountNumber: text(),
-    bankName: text(),
-    bankAccountHolderName: text(),
-    bankIfsc: text(),
-    bankNickname: text(),
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.referencePersonId, table.referencePersonRole],
-      foreignColumns: [users.id, users.role],
-    }),
-    foreignKey({
-      columns: [table.paymentCreator, table.paymentCreatorRole],
-      foreignColumns: [users.id, users.role],
-    }),
-    foreignKey({
-      columns: [table.paymentDeletor, table.paymentDeletorRole],
-      foreignColumns: [users.id, users.role],
-    }),
-  ],
-);
+  // Bank Details
+  bankAccountNumber: text(),
+  bankName: text(),
+  bankAccountHolderName: text(),
+  bankIfsc: text(),
+  bankNickname: text(),
+});
 
 export const ezeeWebhookData = pgTable("ezWebhookData", {
   id: uuid().primaryKey().defaultRandom(),
