@@ -3,6 +3,7 @@ import {
   admins,
   amenities,
   areas,
+  bankDetails,
   bookings,
   cancellations,
   cities,
@@ -338,4 +339,14 @@ export const ezeeWebhookFields = {
   reqBody: ezeeWebhookData.reqBody,
   status: ezeeWebhookData.status,
   createdAt: ezeeWebhookData.createdAt,
+};
+
+export const _bankFields = {
+  id: bankDetails.id,
+  userId: bankDetails.userId,
+  bankName: bankDetails.bankName,
+  accountHolderName: bankDetails.accountHolderName,
+  accountNumber: bankDetails.accountNumber,
+  nickname: bankDetails.nickname,
+  ifsc: bankDetails.ifsc,
 };

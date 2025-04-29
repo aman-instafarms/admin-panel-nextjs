@@ -90,6 +90,11 @@ export const createBooking = async (
                 referencePersonId: p.referencePersonId,
                 paymentType: p.paymentType,
                 paymentMode: p.paymentMode,
+                bankName: p.bankName,
+                bankAccountNumber: p.bankAccountNumber,
+                bankAccountHolderName: p.bankAccountHolderName,
+                bankIfsc: p.bankIfsc,
+                bankNickname: p.bankNickname,
               })),
             )
             .catch((err) => {

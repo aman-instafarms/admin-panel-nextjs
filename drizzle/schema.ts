@@ -411,3 +411,15 @@ export const ezeeWebhookData = pgTable("ezWebhookData", {
     .notNull()
     .defaultNow(),
 });
+
+export const bankDetails = pgTable("bankDetails", {
+  id: uuid().primaryKey().notNull(),
+  userId: uuid()
+    .notNull()
+    .references(() => users.id),
+  bankName: varchar({ length: 255 }).notNull(),
+  accountHolderName: varchar({ length: 255 }).notNull(),
+  accountNumber: varchar({ length: 255 }).notNull(),
+  nickname: varchar({ length: 255 }).notNull(),
+  ifsc: varchar({ length: 255 }).notNull(),
+});
