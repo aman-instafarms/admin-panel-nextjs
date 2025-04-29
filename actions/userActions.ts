@@ -41,10 +41,10 @@ export const createUser = async (
       })
       .catch((err) => {
         console.log("DB Error: ", err);
-        if (err?.constraint === "uniqueEmail") {
+        if (err?.constraint === "unique_email") {
           throw new Error("Email already registered.");
         }
-        if (err?.constraint === "uniqueMobileNumber") {
+        if (err?.constraint === "unique_mobileNumber") {
           throw new Error("Mobile number already registered.");
         }
         throw new Error("Database error.");
