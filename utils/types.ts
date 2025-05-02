@@ -403,3 +403,53 @@ export interface SpecialDateData {
   baseGuestCount: number | null;
   discount: number | null;
 }
+
+export type Property = {
+  id: string;
+  propertyName: string;
+};
+
+export type CouponDiscountType = "flat" | "percentage" | string;
+
+export interface Coupon {
+  id: string;
+  name: string;
+  code: string;
+  validFrom: Date;
+  validTo: Date;
+  discountType: CouponDiscountType;
+  value: number;
+  maxDiscountValue: number | null;
+  applicableDays: string[];
+  createdAt?: Date;
+  updatedAt?: Date;
+  createdBy?: string;
+  updatedBy?: string;
+}
+
+export interface CouponFormData {
+  id?: string;
+  name: string;
+  code: string;
+  validFrom: Date | string;
+  validTo: Date | string;
+  discountType: CouponDiscountType;
+  value: number;
+  maxDiscountValue: number | null;
+  applicableDays: string;
+}
+export interface CouponEditorProps {
+  couponData: CouponFormData | null;
+}
+
+export type userTypes = {
+  id: string;
+  firstName: string;
+  lastName: string | null;
+  email: string;
+};
+
+export type propertiesTypes = {
+  id: string;
+  name: string | null;
+};
