@@ -15,6 +15,7 @@ import {
   specialDates,
   states,
   users,
+  coupons,
 } from "./schema";
 
 export const propertyTypeFields = {
@@ -349,4 +350,17 @@ export const _bankFields = {
   accountNumber: bankDetails.accountNumber,
   nickname: bankDetails.nickname,
   ifsc: bankDetails.ifsc,
+};
+
+// Create coupon fields for use in API
+export const couponFields = {
+  id: coupons.id,
+  name: coupons.name,
+  code: coupons.code,
+  validFrom: coupons.validFrom,
+  validTo: coupons.validTo,
+  discountType: coupons.discountType,
+  value: coupons.value,
+  maxDiscountValue: coupons.maxDiscountValue,
+  applicableDays: coupons.applicableDays,
 };

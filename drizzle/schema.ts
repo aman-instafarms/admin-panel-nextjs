@@ -10,6 +10,7 @@ import {
   date,
   json,
   timestamp,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import {
@@ -60,38 +61,92 @@ export const users = pgTable("users", {
   email: varchar("email", { length: 256 }).notNull().unique("unique_email"),
 });
 
-export const usersRelations = relations(users, ({ many }) => ({
-  ownedproperties: many(ownersOnProperties),
-  managedProperties: many(managersOnProperties),
-  caretakenProperties: many(caretakersOnProperties),
-}));
-
 export const ownersOnProperties = pgTable(
   "ownersOnProperties",
   {
-    ownerId: uuid("ownerId").notNull(),
-    propertyId: uuid("propertyId").notNull(),
+    ownerId: uuid("ownerId")
+      .notNull()
+      .references(() => users.id),
+    propertyId: uuid("propertyId")
+      .notNull()
+      .references(() => properties.id),
   },
   (table) => [primaryKey({ columns: [table.ownerId, table.propertyId] })],
+);
+
+export const ownersOnPropertiesRelations = relations(
+  ownersOnProperties,
+  ({ one }) => ({
+    owner: one(users, {
+      fields: [ownersOnProperties.ownerId],
+      references: [users.id],
+    }),
+    property: one(properties, {
+      fields: [ownersOnProperties.propertyId],
+      references: [properties.id],
+    }),
+  }),
 );
 
 export const managersOnProperties = pgTable(
   "managersOnProperties",
   {
-    managerId: uuid("managerId").notNull(),
-    propertyId: uuid("propertyId").notNull(),
+    managerId: uuid("managerId")
+      .notNull()
+      .references(() => users.id),
+    propertyId: uuid("propertyId")
+      .notNull()
+      .references(() => properties.id),
   },
   (table) => [primaryKey({ columns: [table.managerId, table.propertyId] })],
+);
+
+export const managersOnPropertiesRelations = relations(
+  managersOnProperties,
+  ({ one }) => ({
+    manager: one(users, {
+      fields: [managersOnProperties.managerId],
+      references: [users.id],
+    }),
+    property: one(properties, {
+      fields: [managersOnProperties.propertyId],
+      references: [properties.id],
+    }),
+  }),
 );
 
 export const caretakersOnProperties = pgTable(
   "caretakersOnProperties",
   {
-    caretakerId: uuid("caretakerId").notNull(),
-    propertyId: uuid("propertyId").notNull(),
+    caretakerId: uuid("caretakerId")
+      .notNull()
+      .references(() => users.id),
+    propertyId: uuid("propertyId")
+      .notNull()
+      .references(() => properties.id),
   },
   (table) => [primaryKey({ columns: [table.caretakerId, table.propertyId] })],
 );
+
+export const caretakersOnPropertiesRelations = relations(
+  caretakersOnProperties,
+  ({ one }) => ({
+    caretaker: one(users, {
+      fields: [caretakersOnProperties.caretakerId],
+      references: [users.id],
+    }),
+    property: one(properties, {
+      fields: [caretakersOnProperties.propertyId],
+      references: [properties.id],
+    }),
+  }),
+);
+
+export const usersRelations = relations(users, ({ many }) => ({
+  ownedProperties: many(ownersOnProperties),
+  managedProperties: many(managersOnProperties),
+  caretakenProperties: many(caretakersOnProperties),
+}));
 
 export const properties = pgTable("properties", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -230,6 +285,7 @@ export const propertiesRelations = relations(properties, ({ one, many }) => ({
   managers: many(managersOnProperties),
   caretakers: many(caretakersOnProperties),
   customPricing: many(specialDates),
+  coupons: many(propertiesOnCoupons),
 }));
 
 export const states = pgTable("states", {
@@ -423,3 +479,55 @@ export const bankDetails = pgTable("bankDetails", {
   nickname: varchar({ length: 255 }).notNull(),
   ifsc: varchar({ length: 255 }).notNull(),
 });
+
+// Create enum for coupon discount types
+export const couponDiscountTypeEnum = pgEnum("couponDiscountType", [
+  "flat",
+  "percentage",
+]);
+export const coupons = pgTable("coupons", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  code: text("code").notNull().unique("unique_coupon_code"),
+  validFrom: timestamp({ mode: "string", withTimezone: true }).notNull(),
+  validTo: timestamp({ mode: "string", withTimezone: true }).notNull(),
+  discountType: couponDiscountTypeEnum("discountType").notNull(),
+  value: integer("value").notNull(), // For flat, this is the amount; for percentage, this is the percentage
+  maxDiscountValue: integer("maxDiscountValue"), // Only applicable for percentage discounts
+
+  // Store applicable days as either "all" string or array of specific days
+  // Can be "all" or ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
+  applicableDays: jsonb("applicableDays").notNull(),
+});
+
+export const couponsRelations = relations(coupons, ({ many }) => ({
+  properties: many(propertiesOnCoupons),
+}));
+
+export const propertiesOnCoupons = pgTable(
+  "propertiesOnCoupons",
+  {
+    propertyId: uuid("propertyId")
+      .notNull()
+      .references(() => properties.id),
+    couponId: uuid("couponId")
+      .notNull()
+      .references(() => coupons.id),
+  },
+  (table) => [primaryKey({ columns: [table.propertyId, table.couponId] })],
+);
+
+// Define the relations for the junction table
+export const propertiesOnCouponsRelations = relations(
+  propertiesOnCoupons,
+  ({ one }) => ({
+    property: one(properties, {
+      fields: [propertiesOnCoupons.propertyId],
+      references: [properties.id],
+    }),
+    coupon: one(coupons, {
+      fields: [propertiesOnCoupons.couponId],
+      references: [coupons.id],
+    }),
+  }),
+);

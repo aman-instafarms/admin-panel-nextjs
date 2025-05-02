@@ -17,6 +17,7 @@ import {
   HiUserCircle,
 } from "react-icons/hi";
 import { HiWrench } from "react-icons/hi2";
+import { BiSolidDiscount as coupon } from "react-icons/bi";
 
 export default function AdminSidebar() {
   return (
@@ -37,6 +38,9 @@ export default function AdminSidebar() {
           </SidebarItem>
           <SidebarItem href="/admin/bookings" icon={HiCalendar}>
             Bookings
+          </SidebarItem>
+          <SidebarItem href="/admin/coupons" icon={coupon}>
+            Coupons
           </SidebarItem>
         </SidebarItemGroup>
         <SidebarItemGroup>
