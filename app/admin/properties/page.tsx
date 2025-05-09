@@ -62,7 +62,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
           <Table>
             <TableHead>
               <TableRow>
-                <TableHeadCell>Property ID</TableHeadCell>
+                <TableHeadCell>Reference ID</TableHeadCell>
                 <TableHeadCell>Property Name</TableHeadCell>
                 <TableHeadCell>Property Code</TableHeadCell>
                 <TableHeadCell>Location</TableHeadCell>
@@ -76,12 +76,16 @@ export default async function Page({ searchParams }: ServerPageProps) {
                   className="bg-white dark:border-gray-700 dark:bg-gray-800"
                   key={id}
                 >
-                  <TableCell className="flex items-center justify-between gap-2 font-medium whitespace-nowrap text-gray-900 dark:text-white">
-                    <p className="flex">
-                      {id.substring(0, 15)}
-                      {id.length > 15 && "..."}
-                    </p>
-                    <ClipboardPasteIcon text={id} />
+                  <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
+                    <div>
+                      <div className={"flex items-center gap-3"}>
+                        <div>
+                          {id.substring(0, 15)}
+                          {id.length > 15 && "..."}
+                        </div>
+                        <ClipboardPasteIcon text={id} />
+                      </div>
+                    </div>
                   </TableCell>
                   <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
                     {propertyName}
