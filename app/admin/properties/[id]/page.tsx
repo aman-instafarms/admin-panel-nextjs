@@ -24,6 +24,7 @@ import {
 } from "@/drizzle/schema";
 import { and, eq, gte } from "drizzle-orm";
 import { DateTime } from "luxon";
+import ClipboardPasteIcon from "@/components/ClipboardPasteIcon";
 
 export default async function Page({ params }: ServerPageProps) {
   const { id } = await params;
@@ -142,9 +143,10 @@ export default async function Page({ params }: ServerPageProps) {
         </div>
 
         <div className="mx-auto flex w-full flex-col gap-5 overflow-visible rounded-xl bg-gray-900 p-5">
-          <h6 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white">
-            Edit Property Type
-          </h6>
+          <h3 className="flex gap-4 text-lg font-bold tracking-tight text-gray-900 dark:text-white">
+            Edit Property : {data[0].id}{" "}
+            <ClipboardPasteIcon text={data[0].id} />
+          </h3>
           <PropertyEditor
             data={data[0]}
             specialDatesData={specialDatesData}

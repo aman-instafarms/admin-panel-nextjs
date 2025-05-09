@@ -15,7 +15,7 @@ import {
   TableRow,
 } from "flowbite-react";
 import Pagination from "@/components/Pagination";
-import ClipboardPasteIcon from "./ClipboardPasteIcon";
+import ClipboardPasteIcon from "@/components/ClipboardPasteIcon";
 import { DateTime } from "luxon";
 import { desc } from "drizzle-orm";
 
