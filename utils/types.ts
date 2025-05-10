@@ -94,8 +94,8 @@ export interface _PropertyData {
   id: string;
 
   // Property Detail
-  propertyName: string | null;
-  propertyCode: string | null;
+  propertyName: string;
+  propertyCode: string;
   baseGuestCount: number | null;
   maxGuestCount: number | null;
 

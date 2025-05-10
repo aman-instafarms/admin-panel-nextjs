@@ -110,6 +110,15 @@ export function validateDateStr(dateStr: string | undefined): string | null {
   return null;
 }
 
+export function validateTimeStr(timeStr: string | undefined): string | null {
+  if (!timeStr) return null;
+  const time = DateTime.fromSQL(timeStr);
+  if (time.isValid) {
+    return timeStr;
+  }
+  return null;
+}
+
 export function validatePricing(data: DefaultPricing) {
   if (data.weekdayPrice === null || data.weekdayPrice <= 0) {
     return "Invalid Weekday Pricing.";
@@ -147,13 +156,6 @@ export function validatePropertyData(data: _PropertyData): string | null {
   // Checks
   if (!data.propertyName || data.propertyName.length === 0) {
     return "Invalid Property Name.";
-  }
-  if (!data.checkinTime || data.checkinTime.length === 0) {
-    return "Invalid Checkin time.";
-  }
-
-  if (!data.checkoutTime || data.checkoutTime.length === 0) {
-    return "Invalid Checkout time.";
   }
   // Checking for repeated amenities
   if (data.amenities) {
@@ -250,6 +252,15 @@ export function parseAdminFormData(formData: FormData): AdminData {
 }
 
 export function parsePropertyFormData(formData: FormData): _PropertyData {
+  const propertyName = parseString(formData.get("propertyName")?.toString());
+  const propertyCode = parseString(formData.get("propertyCode")?.toString());
+
+  if (!propertyName) {
+    throw new Error("Enter Property name.");
+  }
+  if (!propertyCode) {
+    throw new Error("Enter Property name.");
+  }
   const amenitiesIds: string[] = [];
   const activitiesIds: string[] = [];
 
@@ -305,8 +316,8 @@ export function parsePropertyFormData(formData: FormData): _PropertyData {
 
   return {
     id: v4(),
-    propertyName: parseString(formData.get("propertyName")?.toString()),
-    propertyCode: parseString(formData.get("propertyCode")?.toString()),
+    propertyName,
+    propertyCode,
     baseGuestCount: parseNumber(formData.get("baseGuestCount")?.toString()),
     maxGuestCount: parseNumber(formData.get("maxGuestCount")?.toString()),
 
@@ -480,8 +491,8 @@ export function parsePropertyFormData(formData: FormData): _PropertyData {
     defaultGstPercentage: parseNumber(
       formData.get("defaultGstPercentage")?.toString(),
     ),
-    checkinTime: parseString(formData.get("checkinTime")?.toString()),
-    checkoutTime: parseString(formData.get("checkoutTime")?.toString()),
+    checkinTime: validateTimeStr(formData.get("checkinTime")?.toString()),
+    checkoutTime: validateTimeStr(formData.get("checkoutTime")?.toString()),
 
     latitude: parseString(formData.get("latitude")?.toString()),
     longtitude: parseString(formData.get("longtitude")?.toString()),

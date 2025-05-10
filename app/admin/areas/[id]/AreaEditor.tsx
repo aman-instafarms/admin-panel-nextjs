@@ -6,8 +6,7 @@ import MyButton from "@/components/MyButton";
 import { _CityData, AreaData, StateData } from "@/utils/types";
 import { parseServerActionResult } from "@/utils/utils";
 import { Label, Select, TextInput } from "flowbite-react";
-import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import toast from "react-hot-toast";
 
 interface AreaEditorProps {
@@ -19,7 +18,6 @@ interface AreaEditorProps {
 export default function AreaEditor(props: AreaEditorProps) {
   const [cityData, setCityData] = useState<_CityData[]>(props.cityData);
   const [loading, startTransition] = useTransition();
-  const router = useRouter();
 
   const fillForm = (areaName?: string, cityId?: string, stateId?: string) => {
     if (areaName) {
@@ -36,11 +34,10 @@ export default function AreaEditor(props: AreaEditorProps) {
     }
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleSubmit = () => {
     startTransition(() => {
       const formData = new FormData(
-        document.getElementById("form") as HTMLFormElement,
+        document.getElementById("areaForm") as HTMLFormElement,
       );
 
       let promise: Promise<string>;
@@ -58,7 +55,6 @@ export default function AreaEditor(props: AreaEditorProps) {
       toast.promise(promise, {
         loading: "Saving Area...",
         success: (data) => {
-          router.push("/admin/areas");
           return data;
         },
         error: (err) => {
@@ -91,11 +87,7 @@ export default function AreaEditor(props: AreaEditorProps) {
   }, [props.data]);
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      id="form"
-      className="mx-auto flex w-full max-w-sm flex-col gap-4"
-    >
+    <form id="areaForm" className="mx-auto flex w-full max-w-sm flex-col gap-4">
       <div>
         <div className="mb-2 block">
           <Label>Area Name</Label>
@@ -135,7 +127,7 @@ export default function AreaEditor(props: AreaEditorProps) {
         </Select>
       </div>
 
-      <MyButton type="submit" loading={loading}>
+      <MyButton onClick={handleSubmit} loading={loading}>
         Submit
       </MyButton>
     </form>
