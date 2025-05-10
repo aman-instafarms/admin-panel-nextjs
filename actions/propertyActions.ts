@@ -24,7 +24,7 @@ export const createProperty = async (
   try {
     const admin = await isAdmin();
     if (!admin) {
-      throw new Error("Unauthorized");
+      return { error: "Unauthorized" };
     }
     const data: _PropertyData = parsePropertyFormData(formData);
 

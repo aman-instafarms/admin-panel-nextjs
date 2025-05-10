@@ -62,7 +62,7 @@ export default async function Page() {
           </Breadcrumb>
         </div>
 
-        <div className="mx-auto flex w-full flex-col gap-5 overflow-x-auto rounded-xl bg-gray-900 p-5">
+        <div className="mx-auto flex w-full flex-col gap-5 rounded-xl bg-gray-900 p-5">
           <h6 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white">
             Create New Property
           </h6>

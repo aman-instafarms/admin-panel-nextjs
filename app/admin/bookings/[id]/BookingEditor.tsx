@@ -23,7 +23,6 @@ import {
   TextInput,
 } from "flowbite-react";
 import { DateTime } from "luxon";
-import { useRouter } from "next/navigation";
 import { useState, useEffect, useTransition } from "react";
 import toast from "react-hot-toast";
 import { HiMinus, HiPlus } from "react-icons/hi";
@@ -51,7 +50,6 @@ const createNewPayment = (): _PaymentData => ({
 });
 
 export default function BookingEditor(props: BookingEditorProps) {
-  const router = useRouter();
   const [loading, startTransition] = useTransition();
   const [showCancellationForm, setShowCancellationForm] =
     useState<boolean>(false);
@@ -121,7 +119,6 @@ export default function BookingEditor(props: BookingEditorProps) {
       toast.promise(promise, {
         loading: "Saving Booking data...",
         success: (data) => {
-          router.push("/admin/bookings");
           return data;
         },
         error: (err) => (err as Error).message,

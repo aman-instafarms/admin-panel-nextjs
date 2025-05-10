@@ -10,8 +10,8 @@ import {
   date,
   json,
   timestamp,
+  time,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
 import {
   ActivityData,
   AmenityData,
@@ -35,10 +35,6 @@ export const propertyTypes = pgTable("propertyTypes", {
   name: text("name").notNull(),
 });
 
-export const propertyTypesRelations = relations(propertyTypes, ({ many }) => ({
-  properties: many(properties),
-}));
-
 export const activities = pgTable("activities", {
   id: uuid("id").primaryKey().defaultRandom(),
   activity: text("activity").notNull(),
@@ -59,12 +55,6 @@ export const users = pgTable("users", {
   whatsappNumber: varchar("whatsappNumber", { length: 256 }),
   email: varchar("email", { length: 256 }).notNull().unique("unique_email"),
 });
-
-export const usersRelations = relations(users, ({ many }) => ({
-  ownedproperties: many(ownersOnProperties),
-  managedProperties: many(managersOnProperties),
-  caretakenProperties: many(caretakersOnProperties),
-}));
 
 export const ownersOnProperties = pgTable(
   "ownersOnProperties",
@@ -97,8 +87,8 @@ export const properties = pgTable("properties", {
   id: uuid("id").primaryKey().defaultRandom(),
 
   // Property Detail
-  propertyName: text("propertyName"),
-  propertyCode: text("propertyCode"),
+  propertyName: text("propertyName").notNull(),
+  propertyCode: text("propertyCode").notNull(),
 
   // Day wise price and charges
   weekdayPrice: integer("weekdayPrice"),
@@ -190,8 +180,8 @@ export const properties = pgTable("properties", {
 
   bookingType: text("bookingType"),
   defaultGstPercentage: integer("defaultGstPercentage"),
-  checkinTime: timestamp({ withTimezone: true, mode: "string" }),
-  checkoutTime: timestamp({ withTimezone: true, mode: "string" }),
+  checkinTime: time("checkinTime"),
+  checkoutTime: time("checkoutTime"),
 
   latitude: text("latitude"),
   longtitude: text("longtitude"),
@@ -209,38 +199,10 @@ export const properties = pgTable("properties", {
   activities: json("activities").$type<ActivityData[]>(),
 });
 
-export const propertiesRelations = relations(properties, ({ one, many }) => ({
-  propertyType: one(propertyTypes, {
-    fields: [properties.propertyTypeId],
-    references: [propertyTypes.id],
-  }),
-  area: one(areas, {
-    fields: [properties.areaId],
-    references: [areas.id],
-  }),
-  city: one(cities, {
-    fields: [properties.cityId],
-    references: [cities.id],
-  }),
-  state: one(states, {
-    fields: [properties.stateId],
-    references: [states.id],
-  }),
-  owners: many(ownersOnProperties),
-  managers: many(managersOnProperties),
-  caretakers: many(caretakersOnProperties),
-  customPricing: many(specialDates),
-}));
-
 export const states = pgTable("states", {
   id: uuid("id").primaryKey().defaultRandom(),
   state: text("state").notNull(),
 });
-
-export const statesRelations = relations(states, ({ many }) => ({
-  cities: many(cities),
-  properties: many(properties),
-}));
 
 export const cities = pgTable("cities", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -250,15 +212,6 @@ export const cities = pgTable("cities", {
     .references(() => states.id),
 });
 
-export const citiesRelations = relations(cities, ({ one, many }) => ({
-  state: one(states, {
-    fields: [cities.stateId],
-    references: [states.id],
-  }),
-  properties: many(properties),
-  areas: many(areas),
-}));
-
 export const areas = pgTable("areas", {
   id: uuid("id").primaryKey().defaultRandom(),
   area: text("area").notNull(),
@@ -266,14 +219,6 @@ export const areas = pgTable("areas", {
     .notNull()
     .references(() => cities.id),
 });
-
-export const areasRelations = relations(areas, ({ one, many }) => ({
-  city: one(cities, {
-    fields: [areas.cityId],
-    references: [cities.id],
-  }),
-  properties: many(properties),
-}));
 
 export const specialDates = pgTable("specialDates", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -287,14 +232,8 @@ export const specialDates = pgTable("specialDates", {
   infantExtraGuestCharge: integer("infantExtraGuestCharge"),
   baseGuestCount: integer("baseGuestCount"),
   discount: integer("discount"),
+  createdAt: timestamp({ mode: "string" }).notNull().defaultNow(),
 });
-
-export const specialDatesRelations = relations(specialDates, ({ one }) => ({
-  property: one(properties, {
-    fields: [specialDates.propertyId],
-    references: [properties.id],
-  }),
-}));
 
 export const admins = pgTable("admins", {
   id: uuid().primaryKey().defaultRandom(),
@@ -413,13 +352,21 @@ export const ezeeWebhookData = pgTable("ezWebhookData", {
 });
 
 export const bankDetails = pgTable("bankDetails", {
-  id: uuid().primaryKey().notNull(),
+  id: uuid().primaryKey().notNull().defaultRandom(),
   userId: uuid()
     .notNull()
     .references(() => users.id),
-  bankName: varchar({ length: 255 }).notNull(),
-  accountHolderName: varchar({ length: 255 }).notNull(),
-  accountNumber: varchar({ length: 255 }).notNull(),
-  nickname: varchar({ length: 255 }).notNull(),
-  ifsc: varchar({ length: 255 }).notNull(),
+  bankName: varchar({ length: 255 }),
+  accountHolderName: varchar({ length: 255 }),
+  accountNumber: varchar({ length: 255 }),
+  nickname: varchar({ length: 255 }),
+  ifsc: varchar({ length: 255 }),
+});
+
+export const blockedDates = pgTable("blockedDates", {
+  id: uuid().primaryKey().notNull().defaultRandom(),
+  propertyId: uuid()
+    .notNull()
+    .references(() => properties.id),
+  blockedDate: date({ mode: "string" }).notNull(),
 });

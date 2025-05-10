@@ -29,7 +29,6 @@ import {
   ToggleSwitch,
 } from "flowbite-react";
 import { DateTime } from "luxon";
-import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import toast from "react-hot-toast";
 import { HiMinus, HiPlus } from "react-icons/hi";
@@ -75,10 +74,15 @@ const createNewAmenity = (): AmenityData => ({
 
 export default function PropertyEditor(props: PropertyEditorProps) {
   const [loading, startTransition] = useTransition();
-  const router = useRouter();
-  const [daywisePrice, setDaywisePrice] = useState<boolean>(false);
-  const [checkinTime, setCheckinTime] = useState<string | null>(null);
-  const [checkoutTime, setCheckoutTime] = useState<string | null>(null);
+  const [daywisePrice, setDaywisePrice] = useState<boolean>(
+    (props.data && props.data.daywisePrice) || false,
+  );
+  const [checkinTime, setCheckinTime] = useState<string | null>(
+    props.data ? props.data.checkinTime : null,
+  );
+  const [checkoutTime, setCheckoutTime] = useState<string | null>(
+    props.data ? props.data.checkoutTime : null,
+  );
   const [specialDateData, setSpecialDateData] = useState<SpecialDateData[]>(
     props.specialDatesData?.length ? props.specialDatesData : [],
   );
@@ -141,7 +145,6 @@ export default function PropertyEditor(props: PropertyEditorProps) {
       toast.promise(promise, {
         loading: "Saving property...",
         success: (data) => {
-          router.push("/admin/properties");
           return data;
         },
         error: (err) => (err as Error).message,
@@ -152,7 +155,6 @@ export default function PropertyEditor(props: PropertyEditorProps) {
   useEffect(() => {
     // Fill the form with loaded data on render
     if (props.data) {
-      setDaywisePrice(props.data.isDisabled ? true : false);
       (document.getElementById("propertyName") as HTMLInputElement).value =
         props.data.propertyName || "";
       (document.getElementById("propertyCode") as HTMLInputElement).value =
@@ -294,7 +296,7 @@ export default function PropertyEditor(props: PropertyEditorProps) {
   }, [props.data]);
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <form id="propertyForm" className="flex flex-col gap-4">
       <Tabs className="text-white">
         <TabItem title="Detail" className="align-center flex flex-col">
           <div className="mx-auto grid max-w-[1000px] grid-cols-2 gap-5">
@@ -679,7 +681,7 @@ export default function PropertyEditor(props: PropertyEditorProps) {
         </TabItem>
       </Tabs>
       <div className="flex justify-end">
-        <MyButton type="submit" loading={loading}>
+        <MyButton onClick={handleSubmit} loading={loading}>
           Submit
         </MyButton>
       </div>
