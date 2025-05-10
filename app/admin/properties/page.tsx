@@ -20,6 +20,7 @@ import { HiPencil } from "react-icons/hi";
 import DeletePropertyButton from "./DeletePropertyButton";
 import { eq } from "drizzle-orm";
 import Pagination from "@/components/Pagination";
+import ClipboardPasteIcon from "@/components/ClipboardPasteIcon";
 
 export default async function Page({ searchParams }: ServerPageProps) {
   const { limit, offset } = parseLimitOffset(await searchParams);
@@ -57,10 +58,11 @@ export default async function Page({ searchParams }: ServerPageProps) {
           </Link>
         </div>
 
-        <div className="mx-auto w-[900px] overflow-x-auto rounded-xl bg-gray-900 p-5">
+        <div className="mx-auto w-full overflow-x-auto rounded-xl bg-gray-900 p-5">
           <Table>
             <TableHead>
               <TableRow>
+                <TableHeadCell>Reference ID</TableHeadCell>
                 <TableHeadCell>Property Name</TableHeadCell>
                 <TableHeadCell>Property Code</TableHeadCell>
                 <TableHeadCell>Location</TableHeadCell>
@@ -74,6 +76,17 @@ export default async function Page({ searchParams }: ServerPageProps) {
                   className="bg-white dark:border-gray-700 dark:bg-gray-800"
                   key={id}
                 >
+                  <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
+                    <div>
+                      <div className={"flex items-center gap-3"}>
+                        <div>
+                          {id.substring(0, 15)}
+                          {id.length > 15 && "..."}
+                        </div>
+                        <ClipboardPasteIcon text={id} />
+                      </div>
+                    </div>
+                  </TableCell>
                   <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
                     {propertyName}
                   </TableCell>
