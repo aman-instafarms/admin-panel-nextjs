@@ -142,8 +142,8 @@ export default async function Page({ params }: ServerPageProps) {
           </Breadcrumb>
         </div>
 
-        <div className="mx-auto flex w-full flex-col gap-5 overflow-visible rounded-xl bg-gray-900 p-5">
-          <h3 className="flex gap-4 text-lg font-bold tracking-tight text-gray-900 dark:text-white">
+        <div className="mx-auto flex w-full flex-col gap-5 overflow-visible rounded-xl bg-slate-50 p-5 dark:bg-gray-900">
+          <h3 className="flex gap-4 text-lg font-bold tracking-tight">
             Edit Property : {data[0].id}{" "}
             <ClipboardPasteIcon text={data[0].id} />
           </h3>

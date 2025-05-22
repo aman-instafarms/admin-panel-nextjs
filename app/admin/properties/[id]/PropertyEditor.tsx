@@ -302,7 +302,7 @@ export default function PropertyEditor(props: PropertyEditorProps) {
 
   return (
     <form id="propertyForm" className="flex flex-col gap-4">
-      <Tabs className="text-white">
+      <Tabs className="">
         <TabItem title="Detail" className="align-center flex flex-col">
           <div className="mx-auto grid max-w-[1000px] grid-cols-2 gap-5">
             <LabelWrapper label="Property Name">
