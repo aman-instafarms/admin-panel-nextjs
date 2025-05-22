@@ -34,7 +34,7 @@ export default function Home() {
       if (result.user) {
         // Get the Firebase ID token
         const token = await result.user.getIdToken();
-
+        console.log("here", token);
         // Store the token as a session cookie (will expire when browser closes)
         Cookies.set("token", token, {
           secure: process.env.NODE_ENV === "production",
@@ -42,6 +42,8 @@ export default function Home() {
         });
 
         router.push("/admin");
+      } else {
+        console.log("No user passed.");
       }
     } catch (error) {
       console.error("Error signing in with Google:", error);

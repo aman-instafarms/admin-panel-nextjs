@@ -10,7 +10,7 @@ export default async function Page() {
             Bookings
           </h5>
 
-          <Breadcrumb className="bg-gray-50 pb-3 dark:bg-gray-800">
+          <Breadcrumb className="bg-white pb-3 dark:bg-gray-800">
             <BreadcrumbItem href="/">Home</BreadcrumbItem>
             <BreadcrumbItem href="/admin">Admin</BreadcrumbItem>
             <BreadcrumbItem href="/admin/bookings">Bookings</BreadcrumbItem>

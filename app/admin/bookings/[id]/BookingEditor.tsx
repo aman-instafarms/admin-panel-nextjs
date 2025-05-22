@@ -23,6 +23,7 @@ import {
   TextInput,
 } from "flowbite-react";
 import { DateTime } from "luxon";
+import { useRouter } from "next/navigation";
 import { useState, useEffect, useTransition } from "react";
 import toast from "react-hot-toast";
 import { HiMinus, HiPlus } from "react-icons/hi";
@@ -51,6 +52,7 @@ const createNewPayment = (): _PaymentData => ({
 
 export default function BookingEditor(props: BookingEditorProps) {
   const [loading, startTransition] = useTransition();
+  const router = useRouter();
   const [showCancellationForm, setShowCancellationForm] =
     useState<boolean>(false);
   const [cancellationLoading, startCancellationTransition] = useTransition();
@@ -119,6 +121,9 @@ export default function BookingEditor(props: BookingEditorProps) {
       toast.promise(promise, {
         loading: "Saving Booking data...",
         success: (data) => {
+          if (!props.data) {
+            router.push("/admin/bookings");
+          }
           return data;
         },
         error: (err) => (err as Error).message,
@@ -328,7 +333,7 @@ export default function BookingEditor(props: BookingEditorProps) {
 
   return (
     <form id="bookingForm" className="flex w-full flex-col gap-5">
-      <Tabs className="text-white">
+      <Tabs className="text-black dark:text-white">
         <TabItem title="Detail" className="align-center flex flex-col">
           <div className="mx-auto grid max-w-[1000px] grid-cols-3 gap-5">
             <LabelWrapper label="Property">

@@ -40,7 +40,9 @@ export default function AdminNavbar() {
       <div className="flex items-center gap-4">
         {user && (
           <div className="flex items-center gap-4">
-            <span className="text-sm text-white">{user.email}</span>
+            <span className="text-sm text-black dark:text-white">
+              {user.email}
+            </span>
             <Button color="red" size="sm" onClick={handleLogout}>
               Logout
             </Button>

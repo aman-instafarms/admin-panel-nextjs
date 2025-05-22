@@ -7,6 +7,7 @@ import { useEffect, useTransition } from "react";
 import { createAmenity, editAmenity } from "@/actions/amenityActions";
 import toast from "react-hot-toast";
 import { Amenity } from "@/utils/types";
+import { useRouter } from "next/navigation";
 
 interface AmenityEditorProps {
   data?: Amenity;
@@ -14,6 +15,7 @@ interface AmenityEditorProps {
 
 export default function AmenityEditor(props: AmenityEditorProps) {
   const [loading, startTransition] = useTransition();
+  const router = useRouter();
 
   const handleSubmit = (formData: FormData) => {
     startTransition(() => {
@@ -29,6 +31,9 @@ export default function AmenityEditor(props: AmenityEditorProps) {
       toast.promise(promise, {
         loading: "Saving Amenity...",
         success: (data) => {
+          if (!props.data) {
+            router.push("/admin/amenities");
+          }
           return data;
         },
         error: (err) => (err as Error).message,

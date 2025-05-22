@@ -85,7 +85,7 @@ export default function PropertySelector({
   return (
     <Popover
       content={
-        <Card className="m-0 min-w-xl">
+        <Card className="m-0 min-w-xl text-black dark:text-white">
           {readOnly ? (
             <h4 className="font-bold">Property Detail (Readonly)</h4>
           ) : (

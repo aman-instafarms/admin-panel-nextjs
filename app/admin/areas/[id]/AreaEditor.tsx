@@ -6,6 +6,7 @@ import MyButton from "@/components/MyButton";
 import { _CityData, AreaData, StateData } from "@/utils/types";
 import { parseServerActionResult } from "@/utils/utils";
 import { Label, Select, TextInput } from "flowbite-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import toast from "react-hot-toast";
 
@@ -18,6 +19,7 @@ interface AreaEditorProps {
 export default function AreaEditor(props: AreaEditorProps) {
   const [cityData, setCityData] = useState<_CityData[]>(props.cityData);
   const [loading, startTransition] = useTransition();
+  const router = useRouter();
 
   const fillForm = (areaName?: string, cityId?: string, stateId?: string) => {
     if (areaName) {
@@ -55,6 +57,9 @@ export default function AreaEditor(props: AreaEditorProps) {
       toast.promise(promise, {
         loading: "Saving Area...",
         success: (data) => {
+          if (!props.data) {
+            router.push("/admin/areas");
+          }
           return data;
         },
         error: (err) => {

@@ -5,6 +5,7 @@ import MyButton from "@/components/MyButton";
 import { AdminData } from "@/utils/types";
 import { parseServerActionResult } from "@/utils/utils";
 import { Label, TextInput } from "flowbite-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useTransition } from "react";
 import toast from "react-hot-toast";
 
@@ -14,6 +15,7 @@ interface AdminEditorProps {
 
 export default function AdminEditor(props: AdminEditorProps) {
   const [loading, startTransition] = useTransition();
+  const router = useRouter();
 
   const handleSubmit = () => {
     const formEl = document.getElementById(
@@ -36,6 +38,9 @@ export default function AdminEditor(props: AdminEditorProps) {
       toast.promise(promise, {
         loading: "Saving Admin data...",
         success: (data) => {
+          if (!props.data) {
+            router.push("/admin/admins");
+          }
           return data;
         },
         error: (err) => (err as Error).message,

@@ -5,6 +5,7 @@ import MyButton from "@/components/MyButton";
 import { Activity } from "@/utils/types";
 import { parseServerActionResult } from "@/utils/utils";
 import { Label, TextInput } from "flowbite-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useTransition } from "react";
 import toast from "react-hot-toast";
 
@@ -14,6 +15,7 @@ interface ActivityEditorProps {
 
 export default function ActivityEditor(props: ActivityEditorProps) {
   const [loading, startTransition] = useTransition();
+  const router = useRouter();
 
   const handleSubmit = (formData: FormData) => {
     startTransition(() => {
@@ -29,6 +31,9 @@ export default function ActivityEditor(props: ActivityEditorProps) {
       toast.promise(promise, {
         loading: "Saving Activity...",
         success: (data) => {
+          if (!props.data) {
+            router.push("/admin/activities");
+          }
           return data;
         },
         error: (err) => (err as Error).message,

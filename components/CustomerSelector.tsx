@@ -84,7 +84,7 @@ export default function CustomerSelector({
   return (
     <Popover
       content={
-        <Card className="m-0 min-w-xl">
+        <Card className="m-0 min-w-xl text-black dark:text-white">
           {readOnly ? (
             <h4 className="font-bold">Customer Detail (Readonly)</h4>
           ) : (

@@ -5,6 +5,7 @@ import MyButton from "@/components/MyButton";
 import { StateData } from "@/utils/types";
 import { parseServerActionResult } from "@/utils/utils";
 import { Label, Select, TextInput } from "flowbite-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useTransition } from "react";
 import toast from "react-hot-toast";
 
@@ -19,6 +20,7 @@ interface CityEditorProps {
 
 export default function CityEditor(props: CityEditorProps) {
   const [loading, startTransition] = useTransition();
+  const router = useRouter();
 
   const handleSubmit = (formData: FormData) => {
     startTransition(() => {
@@ -34,6 +36,9 @@ export default function CityEditor(props: CityEditorProps) {
       toast.promise(promise, {
         loading: "Saving City...",
         success: (data) => {
+          if (!props.data) {
+            router.push("/admin/cities");
+          }
           return data;
         },
         error: (err) => (err as Error).message,

@@ -33,6 +33,7 @@ import { useEffect, useState, useTransition } from "react";
 import toast from "react-hot-toast";
 import { HiMinus, HiPlus } from "react-icons/hi";
 import { v4 } from "uuid";
+import { useRouter } from "next/navigation";
 
 interface PropertyEditorProps {
   data?: PropertyData;
@@ -74,6 +75,7 @@ const createNewAmenity = (): AmenityData => ({
 
 export default function PropertyEditor(props: PropertyEditorProps) {
   const [loading, startTransition] = useTransition();
+  const router = useRouter();
   const [daywisePrice, setDaywisePrice] = useState<boolean>(
     (props.data && props.data.daywisePrice) || false,
   );
@@ -145,6 +147,9 @@ export default function PropertyEditor(props: PropertyEditorProps) {
       toast.promise(promise, {
         loading: "Saving property...",
         success: (data) => {
+          if (!props.data) {
+            router.push("/admin/properties");
+          }
           return data;
         },
         error: (err) => (err as Error).message,

@@ -7,6 +7,7 @@ import {
 import MyButton from "@/components/MyButton";
 import { parseServerActionResult } from "@/utils/utils";
 import { Label, TextInput } from "flowbite-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useTransition } from "react";
 import toast from "react-hot-toast";
 
@@ -19,6 +20,7 @@ interface PropertyTypeEditorProps {
 
 export default function PropertyTypeEditor(props: PropertyTypeEditorProps) {
   const [loading, startTransition] = useTransition();
+  const router = useRouter();
 
   const handleSubmit = () => {
     const form = document.getElementById(
@@ -43,6 +45,9 @@ export default function PropertyTypeEditor(props: PropertyTypeEditorProps) {
       toast.promise(promise, {
         loading: "Saving property type...",
         success: (data) => {
+          if (!props.data) {
+            router.push("/admin/propertyTypes");
+          }
           return data;
         },
         error: (err) => (err as Error).message,

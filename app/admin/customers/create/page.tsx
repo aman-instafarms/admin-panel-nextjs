@@ -10,7 +10,7 @@ export default async function Page() {
             Customers
           </h5>
 
-          <Breadcrumb className="bg-gray-50 pb-3 dark:bg-gray-800">
+          <Breadcrumb className="bg-white pb-3 dark:bg-gray-800">
             <BreadcrumbItem href="/">Home</BreadcrumbItem>
             <BreadcrumbItem href="/admin">Admin</BreadcrumbItem>
             <BreadcrumbItem href="/admin/customers">Customers</BreadcrumbItem>
@@ -18,7 +18,7 @@ export default async function Page() {
           </Breadcrumb>
         </div>
 
-        <div className="mx-auto flex w-[900px] flex-col gap-5 rounded-xl bg-gray-900 p-5">
+        <div className="mx-auto flex w-[900px] flex-col gap-5 rounded-xl bg-slate-100 p-5 dark:bg-gray-900">
           <h6 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white">
             Create New Customer
           </h6>

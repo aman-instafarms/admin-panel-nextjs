@@ -47,7 +47,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
               Properties
             </h5>
 
-            <Breadcrumb className="bg-gray-50 pb-3 dark:bg-gray-800">
+            <Breadcrumb className="bg-white pb-3 dark:bg-gray-800">
               <BreadcrumbItem href="/">Home</BreadcrumbItem>
               <BreadcrumbItem href="/admin">Admin</BreadcrumbItem>
               <BreadcrumbItem href="#">Properties</BreadcrumbItem>
@@ -58,7 +58,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
           </Link>
         </div>
 
-        <div className="mx-auto w-full overflow-x-auto rounded-xl bg-gray-900 p-5">
+        <div className="mx-auto w-full overflow-x-auto rounded-xl bg-slate-100 p-5 dark:bg-gray-900">
           <Table>
             <TableHead>
               <TableRow>

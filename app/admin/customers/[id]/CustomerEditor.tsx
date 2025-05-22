@@ -46,7 +46,9 @@ export default function CustomerEditor(props: CustomerEditorProps) {
       toast.promise(promise, {
         loading: "Saving Customer data...",
         success: (data) => {
-          router.push("/admin/customers");
+          if (!props.data) {
+            router.push("/admin/customers");
+          }
           return data;
         },
         error: (err) => (err as Error).message,

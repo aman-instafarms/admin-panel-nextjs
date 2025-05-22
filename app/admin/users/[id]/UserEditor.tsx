@@ -38,7 +38,9 @@ export default function UserEditor(props: UserEditorProps) {
       toast.promise(promise, {
         loading: "Saving User data...",
         success: (data) => {
-          router.push("/admin/users");
+          if (!props.data) {
+            router.push("/admin/users");
+          }
           return data;
         },
         error: (err) => (err as Error).message,
