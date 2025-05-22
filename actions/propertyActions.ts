@@ -38,7 +38,7 @@ export const createProperty = async (
       .values(data)
       .then(() => {
         revalidatePath("/admin");
-        return { success: "Created new property type." };
+        return { success: "Created new property." };
       })
       .catch((err) => {
         console.log("DB Error: ", err);
@@ -146,7 +146,7 @@ export const deleteProperty = async (
           throw new Error("Property not found.");
         }
         revalidatePath("/admin");
-        return { success: "Property type deleted." };
+        return { success: "Property deleted." };
       })
       .catch((err) => {
         console.log("DB Error: ", err);
