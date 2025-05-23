@@ -98,7 +98,10 @@ export default function BookingEditor(props: BookingEditorProps) {
     );
     payments.forEach((p) => {
       formData.set(`payment-${p.id}`, p.paymentDate);
-      formData.set(`payment-referencePersonId-${p.id}`, p.referencePersonId);
+      formData.set(
+        `payment-referencePersonId-${p.id}`,
+        p.referencePersonId || "",
+      );
       formData.set(`bankName-${p.id}`, p.bankName || "");
       formData.set(
         `bankAccountHolderName-${p.id}`,
@@ -180,7 +183,7 @@ export default function BookingEditor(props: BookingEditorProps) {
         "bookingType",
       ) as HTMLSelectElement | null;
       if (bookingTypeEl) {
-        bookingTypeEl.value = props.data.bookingType;
+        bookingTypeEl.value = props.data.bookingType || "";
       }
 
       const adultCountEl = document.getElementById(

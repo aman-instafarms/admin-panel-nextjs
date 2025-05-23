@@ -1,7 +1,7 @@
 import { db } from "@/drizzle/db";
 import { propertyFields } from "@/drizzle/fields";
 import { areas, cities, properties, states } from "@/drizzle/schema";
-import { parseLimitOffset } from "@/utils/server-utils";
+import { parseFilterParams, parseLimitOffset } from "@/utils/server-utils";
 import { ServerPageProps } from "@/utils/types";
 import {
   Breadcrumb,
@@ -18,19 +18,44 @@ import {
 import Link from "next/link";
 import { HiPencil } from "react-icons/hi";
 import DeletePropertyButton from "./DeletePropertyButton";
-import { eq } from "drizzle-orm";
+import { eq, like, sql } from "drizzle-orm";
 import Pagination from "@/components/Pagination";
 import ClipboardPasteIcon from "@/components/ClipboardPasteIcon";
+import Searchbar from "@/components/Searchbar";
+
+const searchbarKeys = ["Property Name", "Property Code"];
 
 export default async function Page({ searchParams }: ServerPageProps) {
   const { limit, offset } = parseLimitOffset(await searchParams);
+  const filterParams = parseFilterParams(await searchParams);
+  console.log(limit, offset);
 
-  const data = await db
+  const query = db
     .select(propertyFields)
     .from(properties)
     .leftJoin(areas, eq(properties.areaId, areas.id))
     .leftJoin(cities, eq(properties.cityId, cities.id))
-    .leftJoin(states, eq(properties.stateId, states.id))
+    .leftJoin(states, eq(properties.stateId, states.id));
+  let queryWithFilter;
+  if (filterParams) {
+    if (filterParams.searchKey === "Property Name") {
+      queryWithFilter = query.where(
+        like(
+          sql`LOWER(${properties.propertyName})`,
+          `${filterParams.searchValue.toLowerCase()}%`,
+        ),
+      );
+    } else if (filterParams.searchKey === "Property Code") {
+      queryWithFilter = query.where(
+        like(
+          sql`LOWER(${properties.propertyCode})`,
+          `${filterParams.searchValue.toLowerCase()}%`,
+        ),
+      );
+    }
+  }
+
+  const data = await (queryWithFilter ? queryWithFilter : query)
     .limit(limit)
     .offset(offset)
     .catch((err) => {
@@ -53,9 +78,16 @@ export default async function Page({ searchParams }: ServerPageProps) {
               <BreadcrumbItem href="#">Properties</BreadcrumbItem>
             </Breadcrumb>
           </div>
-          <Link href="/admin/properties/create" className="cursor-pointer">
-            <Button>New</Button>
-          </Link>
+          <div className="flex flex-row items-center justify-end gap-5">
+            <Searchbar
+              searchKeys={searchbarKeys}
+              defaultSearchKey={filterParams?.searchKey || "Property Name"}
+            />
+
+            <Link href="/admin/properties/create" className="cursor-pointer">
+              <Button>New</Button>
+            </Link>
+          </div>
         </div>
 
         <div className="mx-auto w-full overflow-x-auto rounded-xl bg-slate-100 p-5 dark:bg-gray-900">

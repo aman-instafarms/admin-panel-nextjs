@@ -28,7 +28,6 @@ export default async function Page({ searchParams }: ServerPageProps) {
     .from(activities)
     .limit(limit)
     .offset(offset)
-    .orderBy(activities.activity)
     .catch((err) => {
       console.log("DB Error: ", err);
       throw new Error("Database Error");

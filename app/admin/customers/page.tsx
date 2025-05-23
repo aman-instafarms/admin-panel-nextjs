@@ -119,11 +119,17 @@ export default async function Page({ searchParams }: ServerPageProps) {
                     {user.gender}
                   </TableCell>
                   <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
-                    {Math.floor(
-                      DateTime.now().diff(DateTime.fromSQL(user.dob), "years")
-                        .years,
-                    )}{" "}
-                    years
+                    {user.dob && (
+                      <div>
+                        {Math.floor(
+                          DateTime.now().diff(
+                            DateTime.fromSQL(user.dob),
+                            "years",
+                          ).years,
+                        )}
+                        {" years"}
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-row items-center gap-3">

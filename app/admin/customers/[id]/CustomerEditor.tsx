@@ -67,7 +67,9 @@ export default function CustomerEditor(props: CustomerEditorProps) {
       el = document.getElementById("mobileNumber") as HTMLInputElement;
       el.value = props.data.mobileNumber || "";
       console.log(props.data.dob);
-      setDob(DateTime.fromSQL(props.data.dob).toJSDate());
+      if (props.data.dob) {
+        setDob(DateTime.fromSQL(props.data.dob).toJSDate());
+      }
 
       const selectEl = document.getElementById("gender") as HTMLSelectElement;
       selectEl.value = props.data.gender || "";
