@@ -56,6 +56,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
   }
 
   const data = await (queryWithFilter ? queryWithFilter : query)
+    .orderBy(properties.propertyCode)
     .limit(limit)
     .offset(offset)
     .catch((err) => {
