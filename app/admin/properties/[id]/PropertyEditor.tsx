@@ -7,15 +7,15 @@ import LabelWrapper from "@/components/LabelWrapper";
 import MyButton from "@/components/MyButton";
 import TimeSelector from "@/components/TimeSelector";
 import {
-  _AreaData,
-  _CityData,
+  _Area,
+  _City,
   Activity,
   ActivityData,
   Amenity,
   AmenityData,
-  PropertyData,
-  PropertyTypeData,
-  StateData,
+  Property,
+  PropertyType,
+  State,
 } from "@/utils/types";
 import { parseServerActionResult } from "@/utils/utils";
 import {
@@ -36,14 +36,14 @@ import { v4 } from "uuid";
 import { useRouter } from "next/navigation";
 
 interface PropertyEditorProps {
-  data?: PropertyData;
+  data?: Property;
   specialDatesData?: SpecialDateData[];
-  propertyTypes: PropertyTypeData[];
+  propertyTypes: PropertyType[];
   amenityData: Amenity[];
   activityData: Activity[];
-  areaData: _AreaData[];
-  cityData: _CityData[];
-  stateData: StateData[];
+  areaData: _Area[];
+  cityData: _City[];
+  stateData: State[];
 }
 
 const createNewSpecialDate = (): SpecialDateData => ({

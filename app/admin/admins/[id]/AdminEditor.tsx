@@ -2,7 +2,7 @@
 
 import { createAdmin, editAdmin } from "@/actions/adminActions";
 import MyButton from "@/components/MyButton";
-import { AdminData } from "@/utils/types";
+import { Admin } from "@/utils/types";
 import { parseServerActionResult } from "@/utils/utils";
 import { Label, TextInput } from "flowbite-react";
 import { useRouter } from "next/navigation";
@@ -10,7 +10,7 @@ import { useEffect, useTransition } from "react";
 import toast from "react-hot-toast";
 
 interface AdminEditorProps {
-  data?: AdminData;
+  data?: Admin;
 }
 
 export default function AdminEditor(props: AdminEditorProps) {

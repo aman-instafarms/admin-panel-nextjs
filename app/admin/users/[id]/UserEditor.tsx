@@ -2,7 +2,7 @@
 
 import { createUser, editUser } from "@/actions/userActions";
 import MyButton from "@/components/MyButton";
-import { UserData } from "@/utils/types";
+import { User } from "@/utils/types";
 import { parseServerActionResult } from "@/utils/utils";
 import { Label, TextInput } from "flowbite-react";
 import { useRouter } from "next/navigation";
@@ -10,7 +10,7 @@ import { useEffect, useTransition } from "react";
 import toast from "react-hot-toast";
 
 interface UserEditorProps {
-  data?: UserData;
+  data?: User;
 }
 
 export default function UserEditor(props: UserEditorProps) {
@@ -50,16 +50,26 @@ export default function UserEditor(props: UserEditorProps) {
 
   useEffect(() => {
     if (props.data) {
-      let el = document.getElementById("firstName") as HTMLInputElement;
-      el.value = props.data.firstName;
-      el = document.getElementById("lastName") as HTMLInputElement;
-      el.value = props.data.lastName || "";
-      el = document.getElementById("email") as HTMLInputElement;
-      el.value = props.data.email;
-      el = document.getElementById("mobileNumber") as HTMLInputElement;
-      el.value = props.data.mobileNumber || "";
-      el = document.getElementById("whatsappNumber") as HTMLInputElement;
-      el.value = props.data.whatsappNumber || "";
+      let el = document.getElementById("firstName") as HTMLInputElement | null;
+      if (el) {
+        el.value = props.data.firstName || "";
+      }
+      el = document.getElementById("lastName") as HTMLInputElement | null;
+      if (el) {
+        el.value = props.data.lastName || "";
+      }
+      el = document.getElementById("email") as HTMLInputElement | null;
+      if (el) {
+        el.value = props.data.email || "";
+      }
+      el = document.getElementById("mobileNumber") as HTMLInputElement | null;
+      if (el) {
+        el.value = props.data.mobileNumber || "";
+      }
+      el = document.getElementById("whatsappNumber") as HTMLInputElement | null;
+      if (el) {
+        el.value = props.data.whatsappNumber || "";
+      }
     }
   }, [props.data]);
 

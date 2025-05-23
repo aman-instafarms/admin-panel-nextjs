@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import { v4 } from "uuid";
 import { areas, cities, states } from "@/drizzle/schema";
 import { revalidatePath } from "next/cache";
-import { AreaData, ServerActionResult } from "@/utils/types";
+import { Area, ServerActionResult } from "@/utils/types";
 import { _areaFields, areaFields } from "@/drizzle/fields";
 import { parseString } from "@/utils/server-utils";
 import { isAdmin } from "@/utils/admin-only";
@@ -135,7 +135,7 @@ export const deleteArea = async (id: string): Promise<ServerActionResult> => {
 
 export const getAreas = async (
   cityId: string,
-): Promise<{ data?: AreaData[]; error?: string }> => {
+): Promise<{ data?: Area[]; error?: string }> => {
   try {
     const admin = await isAdmin();
     if (!admin) {

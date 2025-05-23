@@ -8,7 +8,7 @@ import {
   stateFields,
 } from "@/drizzle/fields";
 import { activities, amenities, propertyTypes, states } from "@/drizzle/schema";
-import { _CityData, _AreaData } from "@/utils/types";
+import { _City, _Area } from "@/utils/types";
 
 export default async function Page() {
   const propertyTypesData = await db
@@ -27,8 +27,8 @@ export default async function Page() {
       throw new Error("Database Error");
     });
 
-  const cityData: _CityData[] = [];
-  const areaData: _AreaData[] = [];
+  const cityData: _City[] = [];
+  const areaData: _Area[] = [];
 
   const amenityData = await db
     .select(amenityFields)

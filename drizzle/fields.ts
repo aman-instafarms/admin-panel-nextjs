@@ -158,21 +158,7 @@ export const _cityFields = {
 };
 
 export const cityFields = {
-  id: cities.id,
-  city: cities.city,
-  state: {
-    id: states.id,
-    state: states.state,
-  },
-};
-
-export const areaFields = {
-  id: areas.id,
-  area: areas.area,
-  city: {
-    id: cities.id,
-    city: cities.city,
-  },
+  ..._cityFields,
   state: {
     id: states.id,
     state: states.state,
@@ -183,6 +169,18 @@ export const _areaFields = {
   id: areas.id,
   area: areas.area,
   cityId: areas.cityId,
+};
+
+export const areaFields = {
+  ..._areaFields,
+  city: {
+    id: cities.id,
+    city: cities.city,
+  },
+  state: {
+    id: states.id,
+    state: states.state,
+  },
 };
 
 export const specialDateFields = {
@@ -345,8 +343,8 @@ export const _bankFields = {
   id: bankDetails.id,
   userId: bankDetails.userId,
   bankName: bankDetails.bankName,
-  accountHolderName: bankDetails.accountHolderName,
-  accountNumber: bankDetails.accountNumber,
-  nickname: bankDetails.nickname,
-  ifsc: bankDetails.ifsc,
+  accountHolderName: bankDetails.bankAccountHolderName,
+  accountNumber: bankDetails.bankAccountNumber,
+  nickname: bankDetails.bankNickname,
+  ifsc: bankDetails.bankIfsc,
 };

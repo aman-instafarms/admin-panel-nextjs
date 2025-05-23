@@ -1,5 +1,5 @@
 import { Breadcrumb, BreadcrumbItem, Card } from "flowbite-react";
-import { _CityData, ServerPageProps } from "@/utils/types";
+import { _City, ServerPageProps } from "@/utils/types";
 import { db } from "@/drizzle/db";
 import { _cityFields, areaFields, stateFields } from "@/drizzle/fields";
 import { areas, cities, states } from "@/drizzle/schema";
@@ -32,7 +32,7 @@ export default async function Page({ params }: ServerPageProps) {
     throw new Error("Not Found");
   }
 
-  let cityData: _CityData[] = [];
+  let cityData: _City[] = [];
   if (data[0].state) {
     cityData = await db
       .select(_cityFields)

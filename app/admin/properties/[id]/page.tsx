@@ -1,6 +1,6 @@
 import { Breadcrumb, BreadcrumbItem, Card } from "flowbite-react";
 import PropertyEditor from "./PropertyEditor";
-import { _AreaData, _CityData, ServerPageProps } from "@/utils/types";
+import { _Area, _City, ServerPageProps } from "@/utils/types";
 import { db } from "@/drizzle/db";
 import {
   _areaFields,
@@ -74,7 +74,7 @@ export default async function Page({ params }: ServerPageProps) {
       throw new Error("Database Error");
     });
 
-  let areaData: _AreaData[] = [];
+  let areaData: _Area[] = [];
   if (data[0].city) {
     areaData = await db
       .select(_areaFields)
@@ -86,7 +86,7 @@ export default async function Page({ params }: ServerPageProps) {
       });
   }
 
-  let cityData: _CityData[] = [];
+  let cityData: _City[] = [];
   if (data[0].state) {
     cityData = await db
       .select(_cityFields)

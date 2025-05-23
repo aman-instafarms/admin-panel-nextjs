@@ -2,7 +2,7 @@
 
 import { createCity, editCity } from "@/actions/cityActions";
 import MyButton from "@/components/MyButton";
-import { StateData } from "@/utils/types";
+import { State } from "@/utils/types";
 import { parseServerActionResult } from "@/utils/utils";
 import { Label, Select, TextInput } from "flowbite-react";
 import { useRouter } from "next/navigation";
@@ -15,7 +15,7 @@ interface CityEditorProps {
     city: string;
     stateId: string;
   };
-  states: StateData[];
+  states: State[];
 }
 
 export default function CityEditor(props: CityEditorProps) {

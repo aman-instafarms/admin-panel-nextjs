@@ -3,7 +3,7 @@
 import { createArea, editArea } from "@/actions/areaActions";
 import { getCities } from "@/actions/cityActions";
 import MyButton from "@/components/MyButton";
-import { _CityData, AreaData, StateData } from "@/utils/types";
+import { _City, Area, State } from "@/utils/types";
 import { parseServerActionResult } from "@/utils/utils";
 import { Label, Select, TextInput } from "flowbite-react";
 import { useRouter } from "next/navigation";
@@ -11,13 +11,13 @@ import { useEffect, useState, useTransition } from "react";
 import toast from "react-hot-toast";
 
 interface AreaEditorProps {
-  data?: AreaData;
-  cityData: _CityData[];
-  stateData: StateData[];
+  data?: Area;
+  cityData: _City[];
+  stateData: State[];
 }
 
 export default function AreaEditor(props: AreaEditorProps) {
-  const [cityData, setCityData] = useState<_CityData[]>(props.cityData);
+  const [cityData, setCityData] = useState<_City[]>(props.cityData);
   const [loading, startTransition] = useTransition();
   const router = useRouter();
 

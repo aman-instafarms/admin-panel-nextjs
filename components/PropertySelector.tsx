@@ -1,6 +1,6 @@
 "use client";
 
-import { _PropertyData } from "@/utils/types";
+import { _Property } from "@/utils/types";
 import { Card, Checkbox, Popover, Select, TextInput } from "flowbite-react";
 import { useEffect, useState, useTransition, MouseEvent } from "react";
 import toast from "react-hot-toast";
@@ -15,7 +15,7 @@ interface PropertySelectorProps {
   readOnly?: boolean;
 }
 
-function getPropertyName(property: _PropertyData) {
+function getPropertyName(property: _Property) {
   return `${property.propertyCode ? `${property.propertyCode} - ` : ""} ${property.propertyName ? property.propertyName : property.id}`;
 }
 
@@ -24,7 +24,7 @@ export default function PropertySelector({
   update,
   readOnly,
 }: PropertySelectorProps) {
-  const [searchResults, setSearchResults] = useState<_PropertyData[]>([]);
+  const [searchResults, setSearchResults] = useState<_Property[]>([]);
   const [loading, startTransition] = useTransition();
   const [uniqueId] = useState<string>(v4());
 

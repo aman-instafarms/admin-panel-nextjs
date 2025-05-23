@@ -3,15 +3,14 @@ import {
   _BookingData,
   _CancellationData,
   _PaymentData,
-  _PropertyData,
+  _Property,
   ActivityData,
-  AdminData,
+  Admin,
   AmenityData,
   BankDetail,
   CustomerData,
-  DefaultPricing,
   Owner,
-  UserData,
+  User,
 } from "./types";
 import { DateTime } from "luxon";
 import { v4 } from "uuid";
@@ -119,40 +118,7 @@ export function validateTimeStr(timeStr: string | undefined): string | null {
   return null;
 }
 
-export function validatePricing(data: DefaultPricing) {
-  if (data.weekdayPrice === null || data.weekdayPrice <= 0) {
-    return "Invalid Weekday Pricing.";
-  }
-  if (data.weekendPrice === null || data.weekendPrice <= 0) {
-    return "Invalid Weekend Pricing.";
-  }
-  if (data.mondayPrice === null || data.mondayPrice <= 0) {
-    return "Invalid Monday Pricing.";
-  }
-  if (data.tuesdayPrice === null || data.tuesdayPrice <= 0) {
-    return "Invalid Tuesday Pricing.";
-  }
-  if (data.wednesdayPrice === null || data.wednesdayPrice <= 0) {
-    return "Invalid Wednesday Pricing.";
-  }
-  if (data.thursdayPrice === null || data.thursdayPrice <= 0) {
-    return "Invalid Thursday Pricing.";
-  }
-  if (data.fridayPrice === null || data.fridayPrice <= 0) {
-    return "Invalid Friday Pricing.";
-  }
-  if (data.saturdayPrice === null || data.saturdayPrice <= 0) {
-    return "Invalid Saturday Pricing.";
-  }
-  if (data.sundayPrice === null || data.sundayPrice <= 0) {
-    return "Invalid Sunday Pricing.";
-  }
-  if (data.daywisePrice === null) {
-    return "Missing day wise pricing flag.";
-  }
-}
-
-export function validatePropertyData(data: _PropertyData): string | null {
+export function validatePropertyData(data: _Property): string | null {
   // Checks
   if (!data.propertyName || data.propertyName.length === 0) {
     return "Invalid Property Name.";
@@ -233,7 +199,7 @@ export function parseSpecialDates(formData: FormData): {
   return { data: res };
 }
 
-export function parseAdminFormData(formData: FormData): AdminData {
+export function parseAdminFormData(formData: FormData): Admin {
   const firstName = parseString(formData.get("firstName")?.toString());
   const email = parseString(formData.get("email")?.toString());
   if (firstName === null) {
@@ -251,7 +217,7 @@ export function parseAdminFormData(formData: FormData): AdminData {
   };
 }
 
-export function parsePropertyFormData(formData: FormData): _PropertyData {
+export function parsePropertyFormData(formData: FormData): _Property {
   const propertyName = parseString(formData.get("propertyName")?.toString());
   const propertyCode = parseString(formData.get("propertyCode")?.toString());
 
@@ -510,7 +476,7 @@ export function parsePropertyFormData(formData: FormData): _PropertyData {
   };
 }
 
-export function parseUserFormData(formData: FormData): UserData {
+export function parseUserFormData(formData: FormData): User {
   const firstName = parseString(formData.get("firstName")?.toString());
   const email = parseString(formData.get("email")?.toString());
   const mobileNumber = parseString(formData.get("mobileNumber")?.toString());

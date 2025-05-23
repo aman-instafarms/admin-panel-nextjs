@@ -4,11 +4,7 @@ import { db } from "@/drizzle/db";
 import { and, eq, like, sql } from "drizzle-orm";
 import { users } from "@/drizzle/schema";
 import { revalidatePath } from "next/cache";
-import {
-  ServerActionResult,
-  ServerSearchResult,
-  UserData,
-} from "@/utils/types";
+import { ServerActionResult, ServerSearchResult, User } from "@/utils/types";
 import { userFields } from "@/drizzle/fields";
 import { parseString, parseUserFormData } from "@/utils/server-utils";
 import { isAdmin } from "@/utils/admin-only";
@@ -146,7 +142,7 @@ export const deleteUser = async (id: string): Promise<ServerActionResult> => {
 
 export const getUser = async (
   id: string,
-): Promise<ServerSearchResult<UserData>> => {
+): Promise<ServerSearchResult<User>> => {
   try {
     const admin = await isAdmin();
     if (!admin) {
@@ -178,7 +174,7 @@ export const getUser = async (
 
 export const searchUser = async (
   formData: FormData,
-): Promise<ServerSearchResult<UserData[]>> => {
+): Promise<ServerSearchResult<User[]>> => {
   try {
     const admin = await isAdmin();
     if (!admin) {
