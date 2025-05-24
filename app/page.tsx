@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import Link from "next/link";
+import { revalidateAfterLogin } from "@/actions/loginActions";
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
@@ -34,13 +35,12 @@ export default function Home() {
       if (result.user) {
         // Get the Firebase ID token
         const token = await result.user.getIdToken();
-        console.log("here", token);
         // Store the token as a session cookie (will expire when browser closes)
         Cookies.set("token", token, {
           secure: process.env.NODE_ENV === "production",
           sameSite: "strict",
         });
-
+        await revalidateAfterLogin();
         router.push("/admin");
       } else {
         console.log("No user passed.");

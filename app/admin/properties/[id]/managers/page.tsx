@@ -2,7 +2,7 @@ import { db } from "@/drizzle/db";
 import { userFields } from "@/drizzle/fields";
 import { managersOnProperties, properties, users } from "@/drizzle/schema";
 import { ServerPageProps } from "@/utils/types";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import {
   Card,
   Breadcrumb,
@@ -59,6 +59,7 @@ export default async function Page({ params, searchParams }: ServerPageProps) {
     .from(managersOnProperties)
     .leftJoin(users, eq(managersOnProperties.managerId, users.id))
     .where(eq(managersOnProperties.propertyId, idString))
+    .orderBy(desc(managersOnProperties.createdAt))
     .limit(limit)
     .offset(offset)
     .catch((err) => {

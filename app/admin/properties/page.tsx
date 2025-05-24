@@ -18,7 +18,7 @@ import {
 import Link from "next/link";
 import { HiPencil } from "react-icons/hi";
 import DeletePropertyButton from "./DeletePropertyButton";
-import { eq, like, sql } from "drizzle-orm";
+import { desc, eq, like, sql } from "drizzle-orm";
 import Pagination from "@/components/Pagination";
 import ClipboardPasteIcon from "@/components/ClipboardPasteIcon";
 import Searchbar from "@/components/Searchbar";
@@ -56,7 +56,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
   }
 
   const data = await (queryWithFilter ? queryWithFilter : query)
-    .orderBy(properties.propertyCode)
+    .orderBy(desc(properties.createdAt))
     .limit(limit)
     .offset(offset)
     .catch((err) => {

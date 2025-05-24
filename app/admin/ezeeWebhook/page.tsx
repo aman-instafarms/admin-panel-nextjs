@@ -85,9 +85,9 @@ export default async function Page({ searchParams }: ServerPageProps) {
                       {status}
                     </TableCell>
                     <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
-                      {DateTime.fromSQL(createdAt).toLocaleString(
-                        DateTime.DATETIME_SHORT,
-                      )}
+                      {DateTime.fromSQL(createdAt, {
+                        zone: "a",
+                      }).toLocaleString(DateTime.DATETIME_SHORT)}
                     </TableCell>
                   </TableRow>
                 );

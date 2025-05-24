@@ -19,6 +19,7 @@ import { HiPencil } from "react-icons/hi";
 import DeleteStateButton from "./DeleteAmenityButton";
 import { amenities } from "@/drizzle/schema";
 import Pagination from "@/components/Pagination";
+import { desc } from "drizzle-orm";
 
 export default async function Page({ searchParams }: ServerPageProps) {
   const { limit, offset } = parseLimitOffset(await searchParams);
@@ -26,6 +27,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
   const data = await db
     .select(amenityFields)
     .from(amenities)
+    .orderBy(desc(amenities.createdAt))
     .limit(limit)
     .offset(offset)
     .catch((err) => {

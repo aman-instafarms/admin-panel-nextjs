@@ -35,7 +35,7 @@ export const timestamps = {
   })
     .notNull()
     .defaultNow(),
-  modifiedAt: timestamp("modifiedAt", {
+  updatedAt: timestamp("updatedAt", {
     withTimezone: true,
     mode: "string",
   })

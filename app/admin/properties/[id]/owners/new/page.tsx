@@ -17,7 +17,7 @@ import {
 } from "flowbite-react";
 import Searchbar from "@/components/Searchbar";
 import { like } from "drizzle-orm/pg-core/expressions";
-import { and, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import AddOwnerButton from "./AddOwnerButton";
 import Pagination from "@/components/Pagination";
 
@@ -81,6 +81,7 @@ export default async function Page({ searchParams, params }: ServerPageProps) {
   }
 
   const data = await (filters.length ? query.where(and(...filters)) : query)
+    .orderBy(desc(users.createdAt))
     .limit(limit)
     .offset(offset)
     .catch((err) => {

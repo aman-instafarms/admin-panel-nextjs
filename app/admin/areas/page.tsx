@@ -1,6 +1,6 @@
 import { db } from "@/drizzle/db";
 import { areaFields } from "@/drizzle/fields";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { areas, cities, states } from "@/drizzle/schema";
 import { parseLimitOffset } from "@/utils/server-utils";
 import { ServerPageProps } from "@/utils/types";
@@ -29,6 +29,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
     .from(areas)
     .leftJoin(cities, eq(areas.cityId, cities.id))
     .leftJoin(states, eq(cities.stateId, states.id))
+    .orderBy(desc(areas.createdAt))
     .limit(limit)
     .offset(offset)
     .catch((err) => {

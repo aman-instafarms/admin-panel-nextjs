@@ -19,6 +19,7 @@ import Link from "next/link";
 import { HiPencil } from "react-icons/hi";
 import DeleteActivityButton from "./DeleteActivityButton";
 import Pagination from "@/components/Pagination";
+import { desc } from "drizzle-orm";
 
 export default async function Page({ searchParams }: ServerPageProps) {
   const { limit, offset } = parseLimitOffset(await searchParams);
@@ -26,6 +27,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
   const data = await db
     .select(activityFields)
     .from(activities)
+    .orderBy(desc(activities.createdAt))
     .limit(limit)
     .offset(offset)
     .catch((err) => {

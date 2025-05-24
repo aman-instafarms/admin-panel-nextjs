@@ -20,7 +20,7 @@ import { HiPencil } from "react-icons/hi";
 import DeleteUserButton from "./DeleteAdminButton";
 import Searchbar from "@/components/Searchbar";
 import { like } from "drizzle-orm/pg-core/expressions";
-import { sql } from "drizzle-orm";
+import { desc, sql } from "drizzle-orm";
 import Pagination from "@/components/Pagination";
 
 const searchbarKeys = ["Name", "Email"];
@@ -48,6 +48,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
   }
 
   const data = await (queryWithFilter ? queryWithFilter : query)
+    .orderBy(desc(users.createdAt))
     .limit(limit)
     .offset(offset)
     .catch((err) => {

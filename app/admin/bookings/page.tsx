@@ -25,7 +25,7 @@ import Link from "next/link";
 import { HiPencil } from "react-icons/hi";
 import Searchbar from "@/components/Searchbar";
 import { like } from "drizzle-orm/pg-core/expressions";
-import { eq, isNotNull, isNull, sql } from "drizzle-orm";
+import { desc, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import Pagination from "@/components/Pagination";
 
 const searchbarKeys = [
@@ -81,6 +81,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
   const data = await (queryWithFilter ? queryWithFilter : query)
     .limit(limit)
     .offset(offset)
+    .orderBy(desc(bookings.createdAt))
     .catch((err) => {
       console.log("DB Error: ", err);
       throw new Error("Database Error");

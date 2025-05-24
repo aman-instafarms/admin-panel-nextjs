@@ -8,6 +8,7 @@ import { app } from "@/utils/firebase";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import toast from "react-hot-toast";
+import { revalidateAfterLogin } from "@/actions/loginActions";
 
 export default function AdminNavbar() {
   const [user, setUser] = useState<User | null>(null);
@@ -23,6 +24,7 @@ export default function AdminNavbar() {
       const auth = getAuth(app);
       await auth.signOut();
       Cookies.remove("token");
+      await revalidateAfterLogin();
       router.push("/");
     } catch (err) {
       console.log(err);
