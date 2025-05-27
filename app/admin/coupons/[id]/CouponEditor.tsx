@@ -3,17 +3,20 @@
 import { useState, useEffect } from "react";
 import { Checkbox, Datepicker, Label, Select, TextInput } from "flowbite-react";
 import MyButton from "@/components/MyButton";
+import { DAYS_OF_WEEK } from "@/utils/Constants";
+import { formatDateToNormal, formatDateForDatabase } from "@/utils/utils";
+import { _Coupon } from "@/utils/types";
+import { useRouter } from "next/navigation";
+import PropertiesTable from "./PropertiesTable";
+import { toast } from "react-hot-toast"; // Make sure toast is properly imported
 import {
   createCouponWithProperties,
-  getPropertyNamesByUserId,
-  getUsersWithProperties,
   updateCouponWithProperties,
-} from "@/actions/couponActions";
-import { DAYS_OF_WEEK } from "@/utils/Constants";
-import { formatDateForDatabase, formatDateToNormal } from "@/utils/utils";
-import { CouponEditorProps, propertiesTypes, userTypes } from "@/utils/types";
-import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
+} from "@/actions/couponActions"; // Assuming these functions exist
+
+interface CouponEditorProps {
+  couponData: _Coupon | null;
+}
 
 export default function CouponEditor({ couponData }: CouponEditorProps) {
   const router = useRouter();
@@ -28,29 +31,34 @@ export default function CouponEditor({ couponData }: CouponEditorProps) {
   const [value, setValue] = useState<number>(0);
   const [maxDiscountValue, setMaxDiscountValue] = useState<number | null>(null);
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
-  // Extra Data
-  const [users, setUsers] = useState<userTypes[]>([]);
   const [selectedProperties, setSelectedProperties] = useState<string[]>([]);
-  const [properties, setProperties] = useState<propertiesTypes[]>([]);
-  const [selectedUserId, setSelectedUserId] = useState<string>("");
-  const [loadingProperties, setLoadingProperties] = useState<boolean>(false);
+  const [searchManagerOwner, setSearchManagerOwner] = useState<string>("");
 
   useEffect(() => {
     if (!couponData) return;
     setName(couponData.name || "");
     setCode(couponData.code || "");
-    setValidFrom(formatDateToNormal(couponData.validFrom) || new Date());
-    setValidTo(formatDateToNormal(couponData.validTo) || new Date());
+    setValidFrom(
+      couponData.validFrom ? new Date(couponData.validFrom) : new Date(),
+    );
+    setValidTo(couponData.validTo ? new Date(couponData.validTo) : new Date());
     setDiscountType(couponData.discountType || "percentage");
     setValue(couponData.value || 0);
-    setMaxDiscountValue(couponData.maxDiscountValue || 0);
-    setSelectedDays(couponData.applicableDays.split("\n"));
+    setMaxDiscountValue(couponData.maxDiscountValue || null);
+
+    // Parse applicable days if they exist
+    if (couponData.applicableDays) {
+      setSelectedDays(couponData.applicableDays.split("\n"));
+    }
+
+    // Set selected properties if they exist
+    if (couponData.properties && Array.isArray(couponData.properties)) {
+      setSelectedProperties(couponData.properties.map((prop) => prop.id));
+    }
   }, [couponData]);
 
   // Computed properties
-  const allDays = selectedDays.length === DAYS_OF_WEEK.length ? true : false;
-  const allProperties =
-    properties.length > 0 && selectedProperties.length === properties.length;
+  const allDays = selectedDays.length === DAYS_OF_WEEK.length;
 
   // Handlers
   const handleDayToggle = (day: string) => {
@@ -61,15 +69,6 @@ export default function CouponEditor({ couponData }: CouponEditorProps) {
     }
   };
 
-  useEffect(() => {
-    const datafunction = async () => {
-      const result = await getUsersWithProperties();
-      setUsers(result);
-    };
-
-    datafunction();
-  }, []);
-
   const handleAllDaysToggle = () => {
     if (allDays) {
       setSelectedDays([]);
@@ -78,39 +77,13 @@ export default function CouponEditor({ couponData }: CouponEditorProps) {
     }
   };
 
-  const handlePropertyToggle = (propertyId: string) => {
-    if (selectedProperties.includes(propertyId)) {
-      setSelectedProperties(selectedProperties.filter((p) => p !== propertyId));
-    } else {
+  const handlePropertySelection = (propertyId: string, isSelected: boolean) => {
+    if (isSelected) {
       setSelectedProperties([...selectedProperties, propertyId]);
-    }
-  };
-
-  const handleAllPropertiesToggle = () => {
-    if (allProperties) {
-      setSelectedProperties([]);
     } else {
-      setSelectedProperties(properties.map((prop) => prop.id));
-    }
-  };
-
-  const handleUserChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const userId = e.target.value;
-    setSelectedUserId(userId);
-
-    if (userId) {
-      setLoadingProperties(true);
-      try {
-        const props = await getPropertyNamesByUserId(userId);
-        setProperties(props);
-        setSelectedProperties([]);
-        setLoadingProperties(false);
-      } catch (error) {
-        toast.error("Failed to load properties");
-        setLoadingProperties(false);
-      }
-    } else {
-      setProperties([]);
+      setSelectedProperties(
+        selectedProperties.filter((id) => id !== propertyId),
+      );
     }
   };
 
@@ -128,21 +101,25 @@ export default function CouponEditor({ couponData }: CouponEditorProps) {
       maxDiscountValue,
       applicableDays: selectedDays.join("\n"),
     };
+
     let result;
     if (couponData) {
-      couponPayload.id = couponData.id;
-      result = updateCouponWithProperties(couponPayload, selectedProperties);
+      result = updateCouponWithProperties(
+        {
+          ...couponPayload,
+          id: couponData.id,
+        },
+        selectedProperties,
+      );
     } else {
       result = createCouponWithProperties(couponPayload, selectedProperties);
     }
-
-    console.log(couponPayload, selectedProperties);
 
     result
       .then((data) => {
         if (data.success) {
           toast.success(
-            `Coupon Created successfullyw with id : ${data.couponId}`,
+            `Coupon ${couponData ? "Updated" : "Created"} successfully with id: ${data.couponId}`,
           );
           setLoading(false);
           router.push("/admin/coupons");
@@ -160,77 +137,25 @@ export default function CouponEditor({ couponData }: CouponEditorProps) {
       id="couponForm"
       onSubmit={handleSubmit}
     >
-      {/* User Selection */}
       <div>
         <div className="mb-2 block">
-          <Label htmlFor="user">Select Property Owner or Manager</Label>
+          <Label htmlFor="searchManagerOwner">Enter Manager/Owner Name</Label>
         </div>
-        <Select id="user" value={selectedUserId} onChange={handleUserChange}>
-          <option value="">Select User (Admin/Manager/Owner)</option>
-          {users.map((user) => (
-            <option key={user.id} value={user.id}>
-              {`${user.firstName} ${user.lastName}`} ({user.email})
-            </option>
-          ))}
-        </Select>
+        <TextInput
+          id="searchManagerOwner"
+          name="searchManagerOwner"
+          type="text"
+          placeholder="Yeshwanth"
+          value={searchManagerOwner}
+          onChange={(e) => setSearchManagerOwner(e.target.value)}
+        />
       </div>
 
-      {/* Applicable Properties */}
-      <div>
-        <div className="mb-2 block">
-          <Label>Applicable Properties</Label>
-        </div>
-
-        {loadingProperties ? (
-          <div className="flex justify-center py-4">
-            <div className="text-center">
-              <div className="border-primary mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-4 border-t-transparent"></div>
-              <p>Loading properties...</p>
-            </div>
-          </div>
-        ) : (
-          <>
-            <div className="mb-4 flex items-center">
-              <Checkbox
-                id="allProperties"
-                checked={allProperties}
-                onChange={handleAllPropertiesToggle}
-                disabled={properties.length === 0}
-              />
-              <Label htmlFor="allProperties" className="ml-2">
-                Apply to all properties{" "}
-                {properties.length > 0 ? `(${properties.length})` : ""}
-              </Label>
-            </div>
-
-            {properties.length === 0 ? (
-              <p className="text-gray-500">
-                {selectedUserId
-                  ? "No properties found for the selected user."
-                  : "Please select a user to view their properties."}
-              </p>
-            ) : (
-              <div className="grid max-h-60 grid-cols-1 gap-2 overflow-y-auto rounded py-2 sm:grid-cols-2 md:grid-cols-3">
-                {properties.map((property) => (
-                  <div key={property.id} className="flex items-center">
-                    <Checkbox
-                      id={`property-${property.id}`}
-                      checked={selectedProperties.includes(property.id)}
-                      onChange={() => handlePropertyToggle(property.id)}
-                    />
-                    <Label
-                      htmlFor={`property-${property.id}`}
-                      className="ml-2 truncate text-sm"
-                    >
-                      {property.name}
-                    </Label>
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
-        )}
-      </div>
+      <PropertiesTable
+        searchTerm={searchManagerOwner}
+        selectedProperties={selectedProperties}
+        onPropertySelect={handlePropertySelection}
+      />
 
       {/* Basic Coupon Information */}
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
@@ -271,8 +196,8 @@ export default function CouponEditor({ couponData }: CouponEditorProps) {
           <Datepicker
             id="validFrom"
             name="validFrom"
-            value={validFrom}
-            onChange={setValidFrom}
+            value={validFrom.toString()}
+            onSelectedDateChanged={setValidFrom}
             required
           />
         </div>
@@ -284,8 +209,8 @@ export default function CouponEditor({ couponData }: CouponEditorProps) {
           <Datepicker
             id="validTo"
             name="validTo"
-            value={validTo}
-            onChange={setValidTo}
+            value={validTo.toString()}
+            onSelectedDateChanged={setValidTo}
             required
           />
         </div>

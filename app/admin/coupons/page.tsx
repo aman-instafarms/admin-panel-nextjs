@@ -1,4 +1,4 @@
-import { ServerPageProps } from "@/utils/types";
+import { _Coupon, ServerPageProps } from "@/utils/types";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -19,12 +19,21 @@ import Searchbar from "@/components/Searchbar";
 import Pagination from "@/components/Pagination";
 import DeleteCouponButton from "./DeleteCouponButton";
 import { getCouponsWithProperties } from "@/actions/couponActions";
-import { formatDateForTable } from "@/utils/utils";
 
 const searchbarKeys = ["Name", "Code"];
 
-// Function to determine if coupon is active based on dates
-function getCouponStatus(validFrom: any, validTo: any) {
+const daysMap = [
+  { key: "forSunday", label: "Sunday" },
+  { key: "forMonday", label: "Monday" },
+  { key: "forTuesday", label: "Tuesday" },
+  { key: "forWednesday", label: "Wednesday" },
+  { key: "forThursday", label: "Thursday" },
+  { key: "forFriday", label: "Friday" },
+  { key: "forSaturday", label: "Saturday" },
+];
+
+// Getting active status based on dates
+function getCouponStatus(validFrom: string, validTo: string) {
   const now = new Date();
   const startDate = new Date(validFrom);
   const endDate = new Date(validTo);
@@ -39,28 +48,84 @@ function getCouponStatus(validFrom: any, validTo: any) {
   }
 }
 
-// formating properties and Days list for display
-function formatList(items: string, topic: string) {
-  if (!items || items.length === 0) {
-    if (topic == "days") return <p>No Day</p>;
-    else return <p>Empty</p>;
-  }
+// Function to format days in a readable way
+function formatDaysinShort(coupon: _Coupon) {
+  const days = [];
+  if (coupon.forSunday) days.push("Su");
+  if (coupon.forMonday) days.push("Mo");
+  if (coupon.forTuesday) days.push("Tu");
+  if (coupon.forWednesday) days.push("We");
+  if (coupon.forThursday) days.push("Th");
+  if (coupon.forFriday) days.push("Fr");
+  if (coupon.forSaturday) days.push("Sa");
+
+  if (days.length === 0) return "None";
+  if (days.length === 7) return "All days";
+
+  return days.join(", ");
+}
+
+// Formatting Days to show in popup
+function formatDayList(coupon: _Coupon) {
+  const applicableDays = daysMap
+    .filter(({ key }) => coupon[key as keyof _Coupon])
+    .map(({ label }) => label);
+
+  if (applicableDays.length === 0) return <p>None</p>;
+
   return (
     <>
-      {items.map((item: string, id: number) => (
+      {applicableDays.map((day, idx) => (
+        <p key={idx}>{day}</p>
+      ))}
+    </>
+  );
+}
+
+// Formatting Properties to show in popup
+function formatPropertiesList(items: (string | null)[]) {
+  const filteredItems = items.filter((item): item is string => item !== null);
+  if (filteredItems.length === 0) return <p>Empty</p>;
+
+  return (
+    <>
+      {filteredItems.map((item, id) => (
         <p key={id}>{item}</p>
       ))}
     </>
   );
 }
 
+// Get Discount value to show.
+function getDiscountedValue(coupon: _Coupon) {
+  let discountValue = "";
+  if (coupon.discountType === "Flat") {
+    discountValue = `₹${coupon.value}`;
+  } else {
+    discountValue = `${coupon.value}%`;
+    if (coupon.maxDiscountValue) {
+      discountValue += ` (max ₹${coupon.maxDiscountValue})`;
+    }
+  }
+  return discountValue;
+}
+
+// Formatting Date : 2025-09-25 00:00:00+05:30   ---> Feb 1, 2025
+function formatDateForTable(dateString: string) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
 export default async function Page({ searchParams }: ServerPageProps) {
-  // Fetch coupons with pagination and filtering
-  const {
-    data: coupons,
-    limit,
-    offset,
-  } = await getCouponsWithProperties(searchParams);
+  // Getting coupons data
+  const { data: coupons, offset } =
+    await getCouponsWithProperties(searchParams);
+
+  console.log(coupons);
 
   return (
     <div className="flex w-full flex-col">
@@ -102,23 +167,11 @@ export default async function Page({ searchParams }: ServerPageProps) {
             </TableHead>
             <TableBody className="divide-y">
               {coupons.map((coupon, index) => {
-                // Format discount value display
-                let discountValue = "";
-                if (coupon.discountType === "flat") {
-                  discountValue = `₹${coupon.value}`;
-                } else {
-                  discountValue = `${coupon.value}%`;
-                  if (coupon.maxDiscountValue) {
-                    discountValue += ` (max ₹${coupon.maxDiscountValue})`;
-                  }
-                }
-
                 // Get coupon status based on dates
-                const status = getCouponStatus(
+                const { label, isActive } = getCouponStatus(
                   coupon.validFrom,
                   coupon.validTo,
                 );
-
                 return (
                   <TableRow
                     className="bg-white dark:border-gray-700 dark:bg-gray-800"
@@ -132,7 +185,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
                       {coupon.code}
                     </TableCell>
                     <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
-                      {discountValue}
+                      {getDiscountedValue(coupon)}
                     </TableCell>
                     <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
                       {formatDateForTable(coupon.validFrom)} -{" "}
@@ -140,10 +193,10 @@ export default async function Page({ searchParams }: ServerPageProps) {
                     </TableCell>
                     <TableCell>
                       <Badge
-                        color={status.isActive ? "success" : "failure"}
+                        color={isActive ? "success" : "failure"}
                         className="whitespace-nowrap"
                       >
-                        {status.label}
+                        {label}
                       </Badge>
                     </TableCell>
                     <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
@@ -152,14 +205,13 @@ export default async function Page({ searchParams }: ServerPageProps) {
                           <div className="max-w-xs p-2">
                             <span className="font-bold">Applicable Days:</span>
                             <div className="flex flex-col">
-                              {formatList(coupon.days, "days")}
+                              {formatDayList(coupon)}
                             </div>
                           </div>
                         }
                       >
                         <span className="cursor-help">
-                          {coupon.days?.length || 0} day
-                          {coupon.days?.length !== 1 ? "s" : ""}
+                          {formatDaysinShort(coupon)}
                         </span>
                       </Tooltip>
                     </TableCell>
@@ -171,7 +223,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
                               Applicable Properties:
                             </span>
                             <div className="flex flex-col">
-                              {formatList(coupon.propertiesList, "property")}
+                              {formatPropertiesList(coupon.propertiesList)}
                             </div>
                           </div>
                         }

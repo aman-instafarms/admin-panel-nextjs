@@ -7,6 +7,7 @@ export const bookingTypeOptions = ["Online", "Offline"] as const;
 export const transactionTypeOptions = ["Credit", "Debit"] as const;
 export const paymentTypeOptions = ["Security Deposit", "Rent"] as const;
 export const paymentModeOptions = ["Cash", "Online"] as const;
+export const discountTypeOptions = ["Flat", "Percentage"] as const;
 
 export interface ServerActionResult {
   success?: string;
@@ -404,23 +405,24 @@ export interface SpecialDateData {
   discount: number | null;
 }
 
-export type Property = {
-  id: string;
-  propertyName: string;
-};
+export type CouponDiscountType = (typeof discountTypeOptions)[number];
 
-export type CouponDiscountType = "flat" | "percentage" | string;
-
-export interface Coupon {
+export interface _Coupon {
   id: string;
   name: string;
   code: string;
-  validFrom: Date;
-  validTo: Date;
+  validFrom: string;
+  validTo: string;
   discountType: CouponDiscountType;
   value: number;
   maxDiscountValue: number | null;
-  applicableDays: string[];
+  forSunday: boolean;
+  forMonday: boolean;
+  forTuesday: boolean;
+  forWednesday: boolean;
+  forThursday: boolean;
+  forFriday: boolean;
+  forSaturday: boolean;
   createdAt?: Date;
   updatedAt?: Date;
   createdBy?: string;
@@ -431,16 +433,20 @@ export interface CouponFormData {
   id?: string;
   name: string;
   code: string;
-  validFrom: Date | string;
-  validTo: Date | string;
+  validFrom: string;
+  validTo: string;
   discountType: CouponDiscountType;
   value: number;
   maxDiscountValue: number | null;
-  applicableDays: string;
+  forSunday: boolean;
+  forMonday: boolean;
+  forTuesday: boolean;
+  forWednesday: boolean;
+  forThursday: boolean;
+  forFriday: boolean;
+  forSaturday: boolean;
 }
-export interface CouponEditorProps {
-  couponData: CouponFormData | null;
-}
+
 
 export type userTypes = {
   id: string;

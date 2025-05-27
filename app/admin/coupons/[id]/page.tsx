@@ -1,7 +1,7 @@
 import { Breadcrumb, BreadcrumbItem, Card } from "flowbite-react";
 import CouponEditor from "./CouponEditor";
 import { ServerPageProps } from "@/utils/types";
-import { couponFields } from "@/drizzle/fields";
+import { _couponFields } from "@/drizzle/fields";
 import { coupons } from "@/drizzle/schema";
 import { db } from "@/drizzle/db";
 import { eq } from "drizzle-orm";
@@ -19,13 +19,14 @@ export default async function Page({ params }: ServerPageProps) {
   }
 
   const data = await db
-    .select(couponFields)
+    .select(_couponFields)
     .from(coupons)
     .where(eq(coupons.id, idString))
     .catch((err) => {
       console.log("DB Error: ", err);
       throw new Error("Database Error");
     });
+
   const couponData = data[0];
 
   return (

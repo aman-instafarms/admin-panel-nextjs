@@ -10,7 +10,6 @@ import {
   date,
   json,
   timestamp,
-  jsonb,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import {
@@ -150,6 +149,7 @@ export const usersRelations = relations(users, ({ many }) => ({
 
 export const properties = pgTable("properties", {
   id: uuid("id").primaryKey().defaultRandom(),
+  commonReferenceID: uuid(),
 
   // Property Detail
   propertyName: text("propertyName"),
@@ -364,6 +364,7 @@ export const genderEnum = pgEnum("gender", genderOptions);
 
 export const customers = pgTable("customers", {
   id: uuid().primaryKey().defaultRandom(),
+  commonReferenceID: uuid(),
   firstName: text().notNull(),
   lastName: text(),
   email: text(),
@@ -394,6 +395,7 @@ export const bookingTypeEnum = pgEnum("bookingType", bookingTypeOptions);
 
 export const bookings = pgTable("bookings", {
   id: uuid().primaryKey().defaultRandom(),
+  commonReferenceID: uuid(),
   propertyId: uuid()
     .notNull()
     .references(() => properties.id),
@@ -482,8 +484,8 @@ export const bankDetails = pgTable("bankDetails", {
 
 // Create enum for coupon discount types
 export const couponDiscountTypeEnum = pgEnum("couponDiscountType", [
-  "flat",
-  "percentage",
+  "Flat",
+  "Percentage",
 ]);
 export const coupons = pgTable("coupons", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -494,10 +496,13 @@ export const coupons = pgTable("coupons", {
   discountType: couponDiscountTypeEnum("discountType").notNull(),
   value: integer("value").notNull(), // For flat, this is the amount; for percentage, this is the percentage
   maxDiscountValue: integer("maxDiscountValue"), // Only applicable for percentage discounts
-
-  // Store applicable days as either "all" string or array of specific days
-  // Can be "all" or ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
-  applicableDays: jsonb("applicableDays").notNull(),
+  forSunday: boolean("forSunday").default(false).notNull(),
+  forMonday: boolean("forMonday").default(false).notNull(),
+  forTuesday: boolean("forTuesday").default(false).notNull(),
+  forWednesday: boolean("forWednesday").default(false).notNull(),
+  forThursday: boolean("forThursday").default(false).notNull(),
+  forFriday: boolean("forFriday").default(false).notNull(),
+  forSaturday: boolean("forSaturday").default(false).notNull(),
 });
 
 export const couponsRelations = relations(coupons, ({ many }) => ({

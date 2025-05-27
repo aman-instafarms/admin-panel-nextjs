@@ -10,70 +10,115 @@ import {
   managersOnProperties,
   caretakersOnProperties,
 } from "@/drizzle/schema";
-import { or, exists, eq, inArray } from "drizzle-orm";
+import { or, exists, eq, inArray, sql } from "drizzle-orm";
 import { parseFilterParams, parseLimitOffset } from "@/utils/server-utils";
 import { like } from "drizzle-orm/pg-core/expressions";
 import { v4 as uuidv4 } from "uuid";
-import { CouponFormData } from "@/utils/types";
+import { CouponFormData, ServerPageProps } from "@/utils/types";
+import { _couponFields } from "@/drizzle/fields";
 
-export async function getCouponsWithProperties(searchParams: any) {
+type SearchParamsType = ServerPageProps["searchParams"];
+
+export async function getProperties() {
   try {
-    const { limit, offset } = parseLimitOffset(searchParams);
-    const filterParams = parseFilterParams(searchParams);
+    const propertiesData = await db.execute(sql`
+      WITH property_basics AS (
+        SELECT 
+          p.id,
+          p."propertyName",
+          p."propertyCode",
+          a.area,
+          c.city,
+          s.state
+        FROM "properties" p
+        LEFT JOIN "areas" a ON p."areaId" = a.id
+        LEFT JOIN "cities" c ON p."cityId" = c.id
+        LEFT JOIN "states" s ON p."stateId" = s.id
+      ),
+      
+      managers AS (
+        SELECT 
+          mp."propertyId",
+          json_agg(
+            CASE
+              WHEN u."lastName" IS NULL THEN u."firstName"
+              ELSE u."firstName" || ' ' || u."lastName"
+            END
+          ) as managers_list
+        FROM "managersOnProperties" mp
+        JOIN "users" u ON mp."managerId" = u.id
+        GROUP BY mp."propertyId"
+      ),
+      
+      owners AS (
+        SELECT 
+          op."propertyId",
+          json_agg(
+            CASE
+              WHEN u."lastName" IS NULL THEN u."firstName"
+              ELSE u."firstName" || ' ' || u."lastName"
+            END
+          ) as owners_list
+        FROM "ownersOnProperties" op
+        JOIN "users" u ON op."ownerId" = u.id
+        GROUP BY op."propertyId"
+      )
+      
+      SELECT 
+        pb.*,
+        COALESCE(m.managers_list, '[]'::json) as "managersList",
+        COALESCE(o.owners_list, '[]'::json) as "ownersList"
+      FROM property_basics pb
+      LEFT JOIN managers m ON pb.id = m."propertyId"
+      LEFT JOIN owners o ON pb.id = o."propertyId"
+  `);
+    return propertiesData.rows;
+  } catch (error) {
+    console.error("Failed to fetch properties:", error);
+  }
+}
 
-    // 1. First get the coupons based on filters
-    const query = db.select().from(coupons);
+export async function getCouponsWithProperties(searchParams: SearchParamsType) {
+  try {
+    const { limit, offset } = parseLimitOffset(await searchParams);
+    const filterParams = parseFilterParams(await searchParams);
 
-    let queryWithFilter;
+    // Query to get all the coupon key and with [...List of properties]
+    const baseQuery = db
+      .select({
+        ..._couponFields,
+        propertiesList: sql<
+          string[]
+        >`COALESCE(array_agg(${properties.propertyName}), ARRAY[]::text[])`,
+      })
+      .from(coupons)
+      .leftJoin(
+        propertiesOnCoupons,
+        eq(coupons.id, propertiesOnCoupons.couponId),
+      )
+      .leftJoin(properties, eq(properties.id, propertiesOnCoupons.propertyId))
+      .groupBy(coupons.id)
+      .limit(limit)
+      .offset(offset);
+
+    // Apply filters conditionally
     if (filterParams) {
-      if (filterParams.searchKey === "Name") {
-        queryWithFilter = query.where(
-          like(coupons.name, `%${filterParams.searchValue}%`),
+      const { searchKey, searchValue } = filterParams;
+      if (searchKey === "Name") {
+        baseQuery.where(
+          like(sql`LOWER(${coupons.name})`, `${searchValue.toLowerCase()}%`),
         );
-      } else if (filterParams.searchKey === "Code") {
-        queryWithFilter = query.where(
-          like(coupons.code, `%${filterParams.searchValue}%`),
+      } else if (searchKey === "Code") {
+        baseQuery.where(
+          like(sql`LOWER(${coupons.code})`, `${searchValue.toLowerCase()}%`),
         );
       }
     }
 
-    const couponsData = await (queryWithFilter ? queryWithFilter : query)
-      .limit(limit)
-      .offset(offset);
-
-    // 2. For each coupon, get the associated properties
-    const couponsWithProperties = await Promise.all(
-      couponsData.map(async (coupon) => {
-        // Query to get all property names associated with this coupon
-        const associatedProperties = await db
-          .select({
-            propertyName: properties.propertyName,
-          })
-          .from(propertiesOnCoupons)
-          .innerJoin(
-            properties,
-            eq(propertiesOnCoupons.propertyId, properties.id),
-          )
-          .where(eq(propertiesOnCoupons.couponId, coupon.id));
-
-        // Extract just the property names
-        const propertyNames = associatedProperties
-          .map((prop) => prop.propertyName)
-          .filter(Boolean); // Filter out any null/undefined property names
-        const days = coupon.applicableDays.split("\n");
-
-        // Return the coupon with the added property names
-        return {
-          ...coupon,
-          days,
-          propertiesList: propertyNames,
-        };
-      }),
-    );
+    const couponsWithProperties = await baseQuery;
 
     return {
       data: couponsWithProperties,
-      limit,
       offset,
     };
   } catch (error) {

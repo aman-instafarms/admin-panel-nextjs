@@ -1,7 +1,12 @@
 import { Breadcrumb, BreadcrumbItem, Card } from "flowbite-react";
 import CouponEditor from "../[id]/CouponEditor";
+import { db } from "@/drizzle/db";
+import { sql } from "drizzle-orm";
+import { useState } from "react";
 
 export default async function Page() {
+  // query to get the property data with city state ownerName and managerName
+
   return (
     <div className="flex w-full flex-col">
       <Card className="w-full bg-white">

@@ -353,7 +353,7 @@ export const _bankFields = {
 };
 
 // Create coupon fields for use in API
-export const couponFields = {
+export const _couponFields = {
   id: coupons.id,
   name: coupons.name,
   code: coupons.code,
@@ -362,5 +362,22 @@ export const couponFields = {
   discountType: coupons.discountType,
   value: coupons.value,
   maxDiscountValue: coupons.maxDiscountValue,
-  applicableDays: coupons.applicableDays,
+  forSunday: coupons.forSunday,
+  forMonday: coupons.forMonday,
+  forTuesday: coupons.forTuesday,
+  forWednesday: coupons.forWednesday,
+  forThursday: coupons.forThursday,
+  forFriday: coupons.forFriday,
+  forSaturday: coupons.forSaturday,
+};
+
+export const propertyFieldsForCoupons = {
+  id: properties.id,
+  propertyName: properties.propertyName,
+  propertyCode: properties.propertyCode,
+  area: areas.area,
+  city: cities.city,
+  state: states.state,
+  managersList: [],
+  ownersList: []
 };
