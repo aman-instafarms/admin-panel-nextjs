@@ -33,7 +33,9 @@ export default function StateEditor(props: StateEditorProps) {
       toast.promise(promise, {
         loading: "Saving State...",
         success: (data) => {
-          router.push("/admin/states");
+          if (!props.data) {
+            router.push("/admin/states");
+          }
           return data;
         },
         error: (err) => (err as Error).message,

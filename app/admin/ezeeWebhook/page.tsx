@@ -15,7 +15,7 @@ import {
   TableRow,
 } from "flowbite-react";
 import Pagination from "@/components/Pagination";
-import ClipboardPasteIcon from "./ClipboardPasteIcon";
+import ClipboardPasteIcon from "@/components/ClipboardPasteIcon";
 import { DateTime } from "luxon";
 import { desc } from "drizzle-orm";
 
@@ -42,7 +42,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
               Ezee Webhook Data
             </h5>
 
-            <Breadcrumb className="bg-gray-50 pb-3 dark:bg-gray-800">
+            <Breadcrumb className="bg-white pb-3 dark:bg-gray-800">
               <BreadcrumbItem href="/">Home</BreadcrumbItem>
               <BreadcrumbItem href="/admin">Admin</BreadcrumbItem>
               <BreadcrumbItem href="#">Ezee Webhook</BreadcrumbItem>
@@ -50,7 +50,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
           </div>
         </div>
 
-        <div className="mx-auto overflow-x-auto rounded-xl bg-gray-900 p-5">
+        <div className="mx-auto overflow-x-auto rounded-xl bg-slate-100 p-5 dark:bg-gray-900">
           <Table>
             <TableHead>
               <TableRow>
@@ -85,9 +85,9 @@ export default async function Page({ searchParams }: ServerPageProps) {
                       {status}
                     </TableCell>
                     <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
-                      {DateTime.fromSQL(createdAt).toLocaleString(
-                        DateTime.DATETIME_SHORT,
-                      )}
+                      {DateTime.fromSQL(createdAt, {
+                        zone: "a",
+                      }).toLocaleString(DateTime.DATETIME_SHORT)}
                     </TableCell>
                   </TableRow>
                 );

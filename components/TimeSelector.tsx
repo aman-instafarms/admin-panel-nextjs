@@ -60,7 +60,7 @@ export default function TimeSelector(props: TimeSelectorProps) {
     <TextInput
       value={timeStr}
       onChange={handleChange}
-      color={props.timestamp ? "success" : "failure"}
+      color={!props.timestamp ? "failure" : "gray"}
     />
   );
 }

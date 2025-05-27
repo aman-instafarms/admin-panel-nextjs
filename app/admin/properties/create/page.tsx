@@ -8,7 +8,7 @@ import {
   stateFields,
 } from "@/drizzle/fields";
 import { activities, amenities, propertyTypes, states } from "@/drizzle/schema";
-import { _CityData, _AreaData } from "@/utils/types";
+import { _City, _Area } from "@/utils/types";
 
 export default async function Page() {
   const propertyTypesData = await db
@@ -27,8 +27,8 @@ export default async function Page() {
       throw new Error("Database Error");
     });
 
-  const cityData: _CityData[] = [];
-  const areaData: _AreaData[] = [];
+  const cityData: _City[] = [];
+  const areaData: _Area[] = [];
 
   const amenityData = await db
     .select(amenityFields)
@@ -54,7 +54,7 @@ export default async function Page() {
             Properties
           </h5>
 
-          <Breadcrumb className="bg-gray-50 pb-3 dark:bg-gray-800">
+          <Breadcrumb className="bg-white pb-3 dark:bg-gray-800">
             <BreadcrumbItem href="/">Home</BreadcrumbItem>
             <BreadcrumbItem href="/admin">Admin</BreadcrumbItem>
             <BreadcrumbItem href="/admin/properties">Properties</BreadcrumbItem>
@@ -62,7 +62,7 @@ export default async function Page() {
           </Breadcrumb>
         </div>
 
-        <div className="mx-auto flex w-full flex-col gap-5 overflow-x-auto rounded-xl bg-gray-900 p-5">
+        <div className="mx-auto flex w-full flex-col gap-5 rounded-xl bg-slate-50 p-5 dark:bg-gray-900">
           <h6 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white">
             Create New Property
           </h6>

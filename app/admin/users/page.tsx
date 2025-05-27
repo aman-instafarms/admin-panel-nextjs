@@ -20,7 +20,7 @@ import { HiPencil } from "react-icons/hi";
 import DeleteUserButton from "./DeleteAdminButton";
 import Searchbar from "@/components/Searchbar";
 import { like } from "drizzle-orm/pg-core/expressions";
-import { sql } from "drizzle-orm";
+import { desc, sql } from "drizzle-orm";
 import Pagination from "@/components/Pagination";
 
 const searchbarKeys = ["Name", "Email"];
@@ -48,6 +48,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
   }
 
   const data = await (queryWithFilter ? queryWithFilter : query)
+    .orderBy(desc(users.createdAt))
     .limit(limit)
     .offset(offset)
     .catch((err) => {
@@ -57,14 +58,14 @@ export default async function Page({ searchParams }: ServerPageProps) {
 
   return (
     <div className="flex w-full flex-col">
-      <Card className="w-full bg-white">
+      <Card className="w-full">
         <div className="space-between flex w-full flex-row items-center">
           <div className="flex w-full flex-col gap-2">
             <h5 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
               Users
             </h5>
 
-            <Breadcrumb className="bg-gray-50 pb-3 dark:bg-gray-800">
+            <Breadcrumb className="bg-white pb-3 dark:bg-gray-800">
               <BreadcrumbItem href="/">Home</BreadcrumbItem>
               <BreadcrumbItem href="/admin">Admin</BreadcrumbItem>
               <BreadcrumbItem href="#">Users</BreadcrumbItem>
@@ -81,7 +82,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
           </div>
         </div>
 
-        <div className="mx-auto table-auto overflow-x-auto rounded-xl bg-gray-900 p-5">
+        <div className="mx-auto table-auto overflow-x-auto rounded-xl bg-slate-100 p-5 dark:bg-gray-900">
           <Table>
             <TableHead>
               <TableRow>

@@ -46,7 +46,9 @@ export default function CustomerEditor(props: CustomerEditorProps) {
       toast.promise(promise, {
         loading: "Saving Customer data...",
         success: (data) => {
-          router.push("/admin/customers");
+          if (!props.data) {
+            router.push("/admin/customers");
+          }
           return data;
         },
         error: (err) => (err as Error).message,
@@ -65,7 +67,9 @@ export default function CustomerEditor(props: CustomerEditorProps) {
       el = document.getElementById("mobileNumber") as HTMLInputElement;
       el.value = props.data.mobileNumber || "";
       console.log(props.data.dob);
-      setDob(DateTime.fromSQL(props.data.dob).toJSDate());
+      if (props.data.dob) {
+        setDob(DateTime.fromSQL(props.data.dob).toJSDate());
+      }
 
       const selectEl = document.getElementById("gender") as HTMLSelectElement;
       selectEl.value = props.data.gender || "";

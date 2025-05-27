@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import { v4 } from "uuid";
 import { cities, states } from "@/drizzle/schema";
 import { revalidatePath } from "next/cache";
-import { CityData, ServerActionResult } from "@/utils/types";
+import { City, ServerActionResult } from "@/utils/types";
 import { _cityFields, cityFields } from "@/drizzle/fields";
 import { parseString } from "@/utils/server-utils";
 import { isAdmin } from "@/utils/admin-only";
@@ -138,7 +138,7 @@ export const deleteCity = async (id: string): Promise<ServerActionResult> => {
 
 export const getCities = async (
   stateId: string,
-): Promise<{ data?: CityData[]; error?: string }> => {
+): Promise<{ data?: City[]; error?: string }> => {
   try {
     const admin = await isAdmin();
     if (!admin) {

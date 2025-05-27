@@ -1,6 +1,6 @@
 import { db } from "@/drizzle/db";
 import { areaFields } from "@/drizzle/fields";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { areas, cities, states } from "@/drizzle/schema";
 import { parseLimitOffset } from "@/utils/server-utils";
 import { ServerPageProps } from "@/utils/types";
@@ -29,6 +29,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
     .from(areas)
     .leftJoin(cities, eq(areas.cityId, cities.id))
     .leftJoin(states, eq(cities.stateId, states.id))
+    .orderBy(desc(areas.createdAt))
     .limit(limit)
     .offset(offset)
     .catch((err) => {
@@ -45,7 +46,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
               Area
             </h5>
 
-            <Breadcrumb className="bg-gray-50 pb-3 dark:bg-gray-800">
+            <Breadcrumb className="bg-white pb-3 dark:bg-gray-800">
               <BreadcrumbItem href="/">Home</BreadcrumbItem>
               <BreadcrumbItem href="/admin">Admin</BreadcrumbItem>
               <BreadcrumbItem href="/admin/areas">Areas</BreadcrumbItem>
@@ -56,7 +57,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
           </Link>
         </div>
 
-        <div className="mx-auto w-[900px] overflow-x-auto rounded-xl bg-gray-900 p-5">
+        <div className="mx-auto w-[900px] overflow-x-auto rounded-xl bg-slate-100 p-5 dark:bg-gray-900">
           <Table>
             <TableHead>
               <TableRow>

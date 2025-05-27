@@ -12,7 +12,7 @@ export async function isAdmin() {
   const token = cookie.get("token")?.value;
 
   if (!token) {
-    return false;
+    throw new Error("You are not logged in.");
   }
 
   try {
@@ -22,7 +22,7 @@ export async function isAdmin() {
     const email = decodedToken.email;
 
     if (!email) {
-      return false;
+      throw new Error("Please login again.");
     }
 
     // Check if user exists in admin table
@@ -32,14 +32,14 @@ export async function isAdmin() {
       .where(eq(admins.email, email));
 
     if (!adminUser || adminUser.length === 0) {
-      return false;
+      throw new Error("This account does not have admin access.");
     }
 
     // If we get here, the user is authenticated and is an admin
     return true;
   } catch (error) {
     // If there's any error in token verification or db query, redirect to home
-    console.error("Auth error:", error);
-    return false;
+    console.error("Auth error:", JSON.stringify(error));
+    throw new Error("Login Expired. Please logout and login again.");
   }
 }

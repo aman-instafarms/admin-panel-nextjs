@@ -1,3 +1,17 @@
+import {
+  activities,
+  admins,
+  amenities,
+  areas,
+  bookings,
+  cities,
+  properties,
+  propertyTypes,
+  states,
+  timestamps,
+  users,
+} from "@/drizzle/schema";
+
 export const roleOptions = ["Owner", "Manager", "Caretaker"] as const;
 export const webhookStatusOptions = ["PENDING", "PROCESSED"] as const;
 export const genderOptions = ["Male", "Female"] as const;
@@ -26,44 +40,17 @@ export interface ServerPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export interface DefaultPricing {
-  weekdayPrice: number | null;
-  weekendPrice: number | null;
-  mondayPrice: number | null;
-  tuesdayPrice: number | null;
-  wednesdayPrice: number | null;
-  thursdayPrice: number | null;
-  fridayPrice: number | null;
-  saturdayPrice: number | null;
-  sundayPrice: number | null;
-  daywisePrice: boolean | null;
-}
+export type TimestampKeys = keyof typeof timestamps;
 
-export interface AdminData {
-  id: string;
-  firstName: string;
-  lastName: string | null;
-  email: string;
-  phoneNumber: string | null;
-}
+export type Admin = Omit<typeof admins.$inferSelect, TimestampKeys>;
 
-export interface ActivityData {
-  id: string;
-  activity: string;
-}
+export type Activity = Omit<typeof activities.$inferSelect, TimestampKeys>;
 
-export interface AmenityData {
-  id: string;
-  amenity: string;
-}
+export type Amenity = Omit<typeof amenities.$inferSelect, TimestampKeys>;
 
-export interface _AreaData {
-  id: string;
-  area: string;
-  cityId: string;
-}
+export type _Area = Omit<typeof areas.$inferSelect, TimestampKeys>;
 
-export interface AreaData {
+export type Area = _Area & {
   id: string;
   area: string;
   city: {
@@ -74,146 +61,22 @@ export interface AreaData {
     id: string;
     state: string;
   } | null;
-}
+};
 
-export interface _CityData {
-  id: string;
-  city: string;
-  stateId: string;
-}
+export type _City = Omit<typeof cities.$inferSelect, TimestampKeys>;
 
-export interface CityData {
+export type City = _City & {
   id: string;
   city: string;
   state: {
     id: string;
     state: string;
   } | null;
-}
+};
 
-export interface _PropertyData {
-  id: string;
+export type _Property = Omit<typeof properties.$inferSelect, TimestampKeys>;
 
-  // Property Detail
-  propertyName: string | null;
-  propertyCode: string | null;
-  baseGuestCount: number | null;
-  maxGuestCount: number | null;
-
-  // Day wise price and charges
-  // weekday -> mon, tue, wed, thu
-  // weekend -> fri, sun
-  // weekendSaturday -> sat
-  weekdayPrice: number | null;
-  weekdayAdultExtraGuestCharge: number | null;
-  weekdayChildExtraGuestCharge: number | null;
-  weekdayInfantExtraGuestCharge: number | null;
-  weekdayBaseGuestCount: number | null;
-  weekdayDiscount: number | null;
-
-  weekendPrice: number | null; // fri, sun
-  weekendAdultExtraGuestCharge: number | null;
-  weekendChildExtraGuestCharge: number | null;
-  weekendInfantExtraGuestCharge: number | null;
-  weekendBaseGuestCount: number | null;
-  weekendDiscount: number | null;
-
-  weekendSaturdayPrice: number | null; // sat
-  weekendSaturdayAdultExtraGuestCharge: number | null;
-  weekendSaturdayChildExtraGuestCharge: number | null;
-  weekendSaturdayInfantExtraGuestCharge: number | null;
-  weekendSaturdayBaseGuestCount: number | null;
-  weekendSaturdayDiscount: number | null;
-
-  mondayPrice: number | null;
-  mondayAdultExtraGuestCharge: number | null;
-  mondayChildExtraGuestCharge: number | null;
-  mondayInfantExtraGuestCharge: number | null;
-  mondayBaseGuestCount: number | null;
-  mondayDiscount: number | null;
-
-  tuesdayPrice: number | null;
-  tuesdayAdultExtraGuestCharge: number | null;
-  tuesdayChildExtraGuestCharge: number | null;
-  tuesdayInfantExtraGuestCharge: number | null;
-  tuesdayBaseGuestCount: number | null;
-  tuesdayDiscount: number | null;
-
-  wednesdayPrice: number | null;
-  wednesdayAdultExtraGuestCharge: number | null;
-  wednesdayChildExtraGuestCharge: number | null;
-  wednesdayInfantExtraGuestCharge: number | null;
-  wednesdayBaseGuestCount: number | null;
-  wednesdayDiscount: number | null;
-
-  thursdayPrice: number | null;
-  thursdayAdultExtraGuestCharge: number | null;
-  thursdayChildExtraGuestCharge: number | null;
-  thursdayInfantExtraGuestCharge: number | null;
-  thursdayBaseGuestCount: number | null;
-  thursdayDiscount: number | null;
-
-  fridayPrice: number | null;
-  fridayAdultExtraGuestCharge: number | null;
-  fridayChildExtraGuestCharge: number | null;
-  fridayInfantExtraGuestCharge: number | null;
-  fridayBaseGuestCount: number | null;
-  fridayDiscount: number | null;
-
-  saturdayPrice: number | null;
-  saturdayAdultExtraGuestCharge: number | null;
-  saturdayChildExtraGuestCharge: number | null;
-  saturdayInfantExtraGuestCharge: number | null;
-  saturdayBaseGuestCount: number | null;
-  saturdayDiscount: number | null;
-
-  sundayPrice: number | null;
-  sundayAdultExtraGuestCharge: number | null;
-  sundayChildExtraGuestCharge: number | null;
-  sundayInfantExtraGuestCharge: number | null;
-  sundayBaseGuestCount: number | null;
-  sundayDiscount: number | null;
-
-  // day wise flag
-  daywisePrice: boolean | null;
-
-  // property status
-  isDisabled: boolean | null;
-
-  // room details
-  bedroomCount: number | null;
-  bathroomCount: number | null;
-  doubleBedCount: number | null;
-  singleBedCount: number | null;
-  mattressCount: number | null;
-
-  // booking defaults
-  bookingType: string | null;
-  defaultGstPercentage: number | null;
-  checkinTime: string | null;
-  checkoutTime: string | null;
-
-  // location
-  latitude: string | null;
-  longtitude: string | null;
-  mapLink: string | null;
-
-  // address
-  address: string | null;
-  areaId: string | null;
-  cityId: string | null;
-  stateId: string | null;
-  pincode: string | null;
-
-  propertyTypeId: string | null;
-
-  // json data
-  amenities: AmenityData[] | null;
-  activities: ActivityData[] | null;
-}
-
-export interface PropertyData
-  extends Omit<_PropertyData, "areaId" | "stateId" | "cityId"> {
+export type Property = _Property & {
   area: {
     id: string;
     area: string;
@@ -226,64 +89,27 @@ export interface PropertyData
     id: string;
     state: string;
   } | null;
-}
+};
 
-export interface PropertyTypeData {
-  id: string;
-  name: string;
-}
+export type PropertyType = Omit<
+  typeof propertyTypes.$inferSelect,
+  TimestampKeys
+>;
 
-export interface StateData {
-  id: string;
-  state: string;
-}
+export type State = Omit<typeof states.$inferSelect, TimestampKeys>;
 
 export type UserRole = (typeof roleOptions)[number];
 
-export interface UserData {
-  id: string;
-  firstName: string;
-  lastName: string | null;
-  mobileNumber: string;
-  whatsappNumber: string | null;
-  email: string;
-}
+export type User = Omit<typeof users.$inferSelect, TimestampKeys>;
 
 export type Gender = (typeof genderOptions)[number];
-
 export type RefundStatus = (typeof refundStatusOptions)[number];
 export type CancellationType = (typeof cancellationTypeOptions)[number];
 export type BookingType = (typeof bookingTypeOptions)[number];
 
-export interface _BookingData {
-  id: string;
-  propertyId: string;
-  customerId: string;
-  bookingType: BookingType;
-  bookingSource: string | null;
-  adultCount: number;
-  childrenCount: number;
-  infantCount: number;
-  checkinDate: string;
-  checkoutDate: string;
-  bookingCreatorId: string;
-  bookingRemarks: string | null;
-  specialRequests: string | null;
+export type _BookingData = Omit<typeof bookings.$inferSelect, TimestampKeys>;
 
-  rentalCharge: number;
-  extraGuestCharge: number;
-  ownerDiscount: number;
-  multipleNightsDiscount: number;
-  couponDiscount: number;
-  totalDiscount: number;
-  gstAmount: number;
-  gstPercentage: number;
-  otaCommission: number;
-  paymentGatewayCharge: number;
-  netOwnerRevenue: number;
-}
-
-export interface BookingData extends _BookingData {
+export type BookingData = _BookingData & {
   property: {
     id: string | null;
     propertyName: string | null;
@@ -302,7 +128,7 @@ export interface BookingData extends _BookingData {
   } | null;
   cancellation: _CancellationData | null;
   customer: CustomerData | null;
-}
+};
 
 export type TransactionType = (typeof transactionTypeOptions)[number];
 export type PaymentType = (typeof paymentTypeOptions)[number];
@@ -314,22 +140,13 @@ export interface _PaymentData extends Omit<BankDetail, "id"> {
   transactionType: TransactionType;
   amount: number;
   paymentDate: string;
-  referencePersonId: string;
+  referencePersonId: string | null;
   paymentType: PaymentType;
   paymentMode: PaymentMode;
 }
 
-export interface BankDetail {
-  id: string;
-  bankAccountNumber: string | null;
-  bankName: string | null;
-  bankAccountHolderName: string | null;
-  bankIfsc: string | null;
-  bankNickname: string | null;
-}
-
 export interface PaymentData extends _PaymentData {
-  referenceUser: UserData;
+  referencePerson: User | null;
 }
 
 export interface _CancellationData {
@@ -341,7 +158,7 @@ export interface _CancellationData {
 }
 
 export interface CancellationData extends _CancellationData {
-  referencePerson: UserData;
+  referencePerson: User;
 }
 
 export interface CustomerData {
@@ -349,9 +166,9 @@ export interface CustomerData {
   firstName: string;
   lastName: string | null;
   email: string | null;
-  dob: string;
+  dob: string | null;
   mobileNumber: string;
-  gender: Gender;
+  gender: Gender | null;
 }
 
 export interface AmenityData {
@@ -370,15 +187,6 @@ export interface ActivityData {
   isUSP: boolean;
 }
 
-export interface Amenity {
-  id: string;
-  amenity: string;
-}
-
-export interface Activity {
-  id: string;
-  activity: string;
-}
 export interface Owner {
   propertyId: string;
   ownerId: string;
@@ -404,6 +212,106 @@ export interface SpecialDateData {
   baseGuestCount: number | null;
   discount: number | null;
 }
+
+export interface BlockedDate {
+  id: string;
+  blockedDate: string;
+}
+
+export interface BankDetail {
+  id: string;
+  bankAccountNumber: string | null;
+  bankName: string | null;
+  bankAccountHolderName: string | null;
+  bankIfsc: string | null;
+  bankNickname: string | null;
+}
+
+export interface DateInfo {
+  price: number | null;
+  status: DateState;
+}
+
+export enum DateState {
+  IDLE = "IDLE",
+  BOOKED = "BOOKED",
+  BLOCKED = "BLOCKED",
+  HIDDEN = "HIDDEN",
+  LOADING = "LOADING",
+}
+
+export type NewBookingData = Omit<_BookingData, "customerId"> & {
+  customer: CustomerData | null;
+  customerId: string | null;
+  payments: _PaymentData[];
+};
+
+export type DefaultPricingData = Pick<
+  _Property,
+  | "weekdayPrice"
+  | "weekdayBaseGuestCount"
+  | "weekdayAdultExtraGuestCharge"
+  | "weekdayChildExtraGuestCharge"
+  | "weekdayInfantExtraGuestCharge"
+  | "weekdayDiscount"
+  | "weekendPrice"
+  | "weekendBaseGuestCount"
+  | "weekendAdultExtraGuestCharge"
+  | "weekendChildExtraGuestCharge"
+  | "weekendInfantExtraGuestCharge"
+  | "weekendDiscount"
+  | "weekendSaturdayPrice"
+  | "weekendSaturdayBaseGuestCount"
+  | "weekendSaturdayAdultExtraGuestCharge"
+  | "weekendSaturdayChildExtraGuestCharge"
+  | "weekendSaturdayInfantExtraGuestCharge"
+  | "weekendSaturdayDiscount"
+  | "mondayPrice"
+  | "mondayBaseGuestCount"
+  | "mondayAdultExtraGuestCharge"
+  | "mondayChildExtraGuestCharge"
+  | "mondayInfantExtraGuestCharge"
+  | "mondayDiscount"
+  | "tuesdayPrice"
+  | "tuesdayBaseGuestCount"
+  | "tuesdayAdultExtraGuestCharge"
+  | "tuesdayChildExtraGuestCharge"
+  | "tuesdayInfantExtraGuestCharge"
+  | "tuesdayDiscount"
+  | "wednesdayPrice"
+  | "wednesdayBaseGuestCount"
+  | "wednesdayAdultExtraGuestCharge"
+  | "wednesdayChildExtraGuestCharge"
+  | "wednesdayInfantExtraGuestCharge"
+  | "wednesdayDiscount"
+  | "thursdayPrice"
+  | "thursdayBaseGuestCount"
+  | "thursdayAdultExtraGuestCharge"
+  | "thursdayChildExtraGuestCharge"
+  | "thursdayInfantExtraGuestCharge"
+  | "thursdayDiscount"
+  | "fridayPrice"
+  | "fridayBaseGuestCount"
+  | "fridayAdultExtraGuestCharge"
+  | "fridayChildExtraGuestCharge"
+  | "fridayInfantExtraGuestCharge"
+  | "fridayDiscount"
+  | "saturdayPrice"
+  | "saturdayBaseGuestCount"
+  | "saturdayAdultExtraGuestCharge"
+  | "saturdayChildExtraGuestCharge"
+  | "saturdayInfantExtraGuestCharge"
+  | "saturdayDiscount"
+  | "sundayPrice"
+  | "sundayBaseGuestCount"
+  | "sundayAdultExtraGuestCharge"
+  | "sundayChildExtraGuestCharge"
+  | "sundayInfantExtraGuestCharge"
+  | "sundayDiscount"
+  | "daywisePrice"
+>;
+
+export type PropertyDataWithRole = Property & { role: UserRole };
 
 export type CouponDiscountType = (typeof discountTypeOptions)[number];
 

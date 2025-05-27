@@ -2,7 +2,7 @@ import { db } from "@/drizzle/db";
 import { userFields } from "@/drizzle/fields";
 import { managersOnProperties, properties, users } from "@/drizzle/schema";
 import { ServerPageProps } from "@/utils/types";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import {
   Card,
   Breadcrumb,
@@ -59,6 +59,7 @@ export default async function Page({ params, searchParams }: ServerPageProps) {
     .from(managersOnProperties)
     .leftJoin(users, eq(managersOnProperties.managerId, users.id))
     .where(eq(managersOnProperties.propertyId, idString))
+    .orderBy(desc(managersOnProperties.createdAt))
     .limit(limit)
     .offset(offset)
     .catch((err) => {
@@ -74,8 +75,7 @@ export default async function Page({ params, searchParams }: ServerPageProps) {
             <h5 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
               Managers - {property.propertyName}
             </h5>
-
-            <Breadcrumb className="bg-gray-50 pb-3 dark:bg-gray-800">
+            <Breadcrumb className="bg-white pb-3 dark:bg-gray-800">
               <BreadcrumbItem href="/">Home</BreadcrumbItem>
               <BreadcrumbItem href="/admin">Admin</BreadcrumbItem>
               <BreadcrumbItem href="/admin/properties">
@@ -99,7 +99,7 @@ export default async function Page({ params, searchParams }: ServerPageProps) {
           </div>
         </div>
 
-        <div className="mx-auto w-[900px] overflow-x-auto rounded-xl bg-gray-900 p-5">
+        <div className="mx-auto w-[900px] overflow-x-auto rounded-xl bg-slate-100 p-5 dark:bg-gray-900">
           <Table>
             <TableHead>
               <TableRow>

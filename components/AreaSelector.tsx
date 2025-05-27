@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { getCities } from "@/actions/cityActions";
 import { getAreas } from "@/actions/areaActions";
 import toast from "react-hot-toast";
-import { _AreaData, _CityData, StateData } from "@/utils/types";
+import { _Area, _City, State } from "@/utils/types";
 
 interface AreaSelectorProps {
   data?: {
@@ -23,14 +23,14 @@ interface AreaSelectorProps {
       state: string;
     } | null;
   };
-  areaData: _AreaData[];
-  cityData: _CityData[];
-  stateData: StateData[];
+  areaData: _Area[];
+  cityData: _City[];
+  stateData: State[];
 }
 
 export default function AreaSelector(props: AreaSelectorProps) {
-  const [areaData, setAreaData] = useState<_AreaData[]>(props.areaData);
-  const [cityData, setCityData] = useState<_CityData[]>(props.cityData);
+  const [areaData, setAreaData] = useState<_Area[]>(props.areaData);
+  const [cityData, setCityData] = useState<_City[]>(props.cityData);
 
   const handleCityChange = async () => {
     const cityId = (document.getElementById("cityId") as HTMLSelectElement)

@@ -8,6 +8,7 @@ import { app } from "@/utils/firebase";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import toast from "react-hot-toast";
+import { revalidateAfterLogin } from "@/actions/loginActions";
 
 export default function AdminNavbar() {
   const [user, setUser] = useState<User | null>(null);
@@ -23,6 +24,7 @@ export default function AdminNavbar() {
       const auth = getAuth(app);
       await auth.signOut();
       Cookies.remove("token");
+      await revalidateAfterLogin();
       router.push("/");
     } catch (err) {
       console.log(err);
@@ -40,7 +42,9 @@ export default function AdminNavbar() {
       <div className="flex items-center gap-4">
         {user && (
           <div className="flex items-center gap-4">
-            <span className="text-sm text-white">{user.email}</span>
+            <span className="text-sm text-black dark:text-white">
+              {user.email}
+            </span>
             <Button color="red" size="sm" onClick={handleLogout}>
               Logout
             </Button>

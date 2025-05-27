@@ -28,10 +28,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <ThemeModeScript />
+        <ThemeModeScript mode="dark" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} bg-gray-900 antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} bg-slate-200 text-black! antialiased dark:bg-gray-900 dark:text-white!`}
       >
         <AdminNavbar />
         {children}

@@ -2,7 +2,7 @@
 
 import { createCity, editCity } from "@/actions/cityActions";
 import MyButton from "@/components/MyButton";
-import { StateData } from "@/utils/types";
+import { State } from "@/utils/types";
 import { parseServerActionResult } from "@/utils/utils";
 import { Label, Select, TextInput } from "flowbite-react";
 import { useRouter } from "next/navigation";
@@ -15,7 +15,7 @@ interface CityEditorProps {
     city: string;
     stateId: string;
   };
-  states: StateData[];
+  states: State[];
 }
 
 export default function CityEditor(props: CityEditorProps) {
@@ -36,7 +36,9 @@ export default function CityEditor(props: CityEditorProps) {
       toast.promise(promise, {
         loading: "Saving City...",
         success: (data) => {
-          router.push("/admin/cities");
+          if (!props.data) {
+            router.push("/admin/cities");
+          }
           return data;
         },
         error: (err) => (err as Error).message,

@@ -1,6 +1,6 @@
 "use client";
 
-import { UserData } from "@/utils/types";
+import { User } from "@/utils/types";
 import { Card, Checkbox, Popover, Select, TextInput } from "flowbite-react";
 import { useEffect, useState, useTransition, MouseEvent } from "react";
 import toast from "react-hot-toast";
@@ -20,7 +20,7 @@ export default function UserSelector({
   update,
   readOnly,
 }: UserSelectorProps) {
-  const [searchResults, setSearchResults] = useState<UserData[]>([]);
+  const [searchResults, setSearchResults] = useState<User[]>([]);
   const [loading, startTransition] = useTransition();
   const [uniqueId] = useState<string>(v4());
 
@@ -85,7 +85,7 @@ export default function UserSelector({
   return (
     <Popover
       content={
-        <Card className="m-0 min-w-xl">
+        <Card className="m-0 min-w-xl text-black dark:text-white">
           {readOnly ? (
             <h4 className="font-bold">User Detail (Readonly)</h4>
           ) : (

@@ -19,6 +19,7 @@ import Link from "next/link";
 import { HiPencil } from "react-icons/hi";
 import DeletePropertyTypeButton from "./DeletePropertyTypeButton";
 import Pagination from "@/components/Pagination";
+import { desc } from "drizzle-orm";
 
 export default async function Page({ searchParams }: ServerPageProps) {
   const { limit, offset } = parseLimitOffset(await searchParams);
@@ -26,6 +27,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
   const data = await db
     .select(propertyTypeFields)
     .from(propertyTypes)
+    .orderBy(desc(propertyTypes.createdAt))
     .limit(limit)
     .offset(offset)
     .catch((err) => {
@@ -42,7 +44,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
               Property Types
             </h5>
 
-            <Breadcrumb className="bg-gray-50 pb-3 dark:bg-gray-800">
+            <Breadcrumb className="bg-white pb-3 dark:bg-gray-800">
               <BreadcrumbItem href="/">Home</BreadcrumbItem>
               <BreadcrumbItem href="/admin">Admin</BreadcrumbItem>
               <BreadcrumbItem href="#">Property Types</BreadcrumbItem>
@@ -53,7 +55,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
           </Link>
         </div>
 
-        <div className="mx-auto w-[900px] overflow-x-auto rounded-xl bg-gray-900 p-5">
+        <div className="mx-auto w-[900px] overflow-x-auto rounded-xl bg-slate-100 p-5 dark:bg-gray-900">
           <Table>
             <TableHead>
               <TableRow>

@@ -17,7 +17,7 @@ import {
 } from "flowbite-react";
 import Searchbar from "@/components/Searchbar";
 import { like } from "drizzle-orm/pg-core/expressions";
-import { and, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import Pagination from "@/components/Pagination";
 import AddCaretakerButton from "./AddCaretakerButton";
 
@@ -59,7 +59,10 @@ export default async function Page({ searchParams, params }: ServerPageProps) {
     .from(users)
     .leftJoin(
       caretakersOnProperties,
-      eq(users.id, caretakersOnProperties.caretakerId),
+      and(
+        eq(users.id, caretakersOnProperties.caretakerId),
+        eq(caretakersOnProperties.propertyId, idString),
+      ),
     );
 
   const filters = [];
@@ -78,6 +81,7 @@ export default async function Page({ searchParams, params }: ServerPageProps) {
   }
 
   const data = await (filters.length ? query.where(and(...filters)) : query)
+    .orderBy(desc(users.createdAt))
     .limit(limit)
     .offset(offset)
     .catch((err) => {
@@ -94,7 +98,7 @@ export default async function Page({ searchParams, params }: ServerPageProps) {
               Add Caretaker - {property.propertyCode || property.id}
             </h5>
 
-            <Breadcrumb className="bg-gray-50 pb-3 dark:bg-gray-800">
+            <Breadcrumb className="bg-white pb-3 dark:bg-gray-800">
               <BreadcrumbItem href="/">Home</BreadcrumbItem>
               <BreadcrumbItem href="/admin">Admin</BreadcrumbItem>
               <BreadcrumbItem href="/admin/properties">
@@ -117,7 +121,7 @@ export default async function Page({ searchParams, params }: ServerPageProps) {
           </div>
         </div>
 
-        <div className="mx-auto table-auto overflow-x-auto rounded-xl bg-gray-900 p-5">
+        <div className="mx-auto table-auto overflow-x-auto rounded-xl bg-slate-100 p-5 dark:bg-gray-900">
           <Table>
             <TableHead>
               <TableRow>

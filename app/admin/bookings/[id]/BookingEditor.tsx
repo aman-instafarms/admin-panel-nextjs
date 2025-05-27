@@ -51,8 +51,8 @@ const createNewPayment = (): _PaymentData => ({
 });
 
 export default function BookingEditor(props: BookingEditorProps) {
-  const router = useRouter();
   const [loading, startTransition] = useTransition();
+  const router = useRouter();
   const [showCancellationForm, setShowCancellationForm] =
     useState<boolean>(false);
   const [cancellationLoading, startCancellationTransition] = useTransition();
@@ -98,7 +98,10 @@ export default function BookingEditor(props: BookingEditorProps) {
     );
     payments.forEach((p) => {
       formData.set(`payment-${p.id}`, p.paymentDate);
-      formData.set(`payment-referencePersonId-${p.id}`, p.referencePersonId);
+      formData.set(
+        `payment-referencePersonId-${p.id}`,
+        p.referencePersonId || "",
+      );
       formData.set(`bankName-${p.id}`, p.bankName || "");
       formData.set(
         `bankAccountHolderName-${p.id}`,
@@ -121,7 +124,9 @@ export default function BookingEditor(props: BookingEditorProps) {
       toast.promise(promise, {
         loading: "Saving Booking data...",
         success: (data) => {
-          router.push("/admin/bookings");
+          if (!props.data) {
+            router.push("/admin/bookings");
+          }
           return data;
         },
         error: (err) => (err as Error).message,
@@ -178,7 +183,7 @@ export default function BookingEditor(props: BookingEditorProps) {
         "bookingType",
       ) as HTMLSelectElement | null;
       if (bookingTypeEl) {
-        bookingTypeEl.value = props.data.bookingType;
+        bookingTypeEl.value = props.data.bookingType || "";
       }
 
       const adultCountEl = document.getElementById(
@@ -331,7 +336,7 @@ export default function BookingEditor(props: BookingEditorProps) {
 
   return (
     <form id="bookingForm" className="flex w-full flex-col gap-5">
-      <Tabs className="text-white">
+      <Tabs className="text-black dark:text-white">
         <TabItem title="Detail" className="align-center flex flex-col">
           <div className="mx-auto grid max-w-[1000px] grid-cols-3 gap-5">
             <LabelWrapper label="Property">

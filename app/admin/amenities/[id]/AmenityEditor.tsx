@@ -3,11 +3,11 @@
 import MyButton from "@/components/MyButton";
 import { parseServerActionResult } from "@/utils/utils";
 import { Label, TextInput } from "flowbite-react";
-import { useRouter } from "next/navigation";
 import { useEffect, useTransition } from "react";
 import { createAmenity, editAmenity } from "@/actions/amenityActions";
 import toast from "react-hot-toast";
 import { Amenity } from "@/utils/types";
+import { useRouter } from "next/navigation";
 
 interface AmenityEditorProps {
   data?: Amenity;
@@ -31,7 +31,9 @@ export default function AmenityEditor(props: AmenityEditorProps) {
       toast.promise(promise, {
         loading: "Saving Amenity...",
         success: (data) => {
-          router.push("/admin/amenities");
+          if (!props.data) {
+            router.push("/admin/amenities");
+          }
           return data;
         },
         error: (err) => (err as Error).message,

@@ -1,6 +1,6 @@
 import { Breadcrumb, BreadcrumbItem, Card } from "flowbite-react";
 import PropertyEditor from "./PropertyEditor";
-import { _AreaData, _CityData, ServerPageProps } from "@/utils/types";
+import { _Area, _City, ServerPageProps } from "@/utils/types";
 import { db } from "@/drizzle/db";
 import {
   _areaFields,
@@ -24,6 +24,7 @@ import {
 } from "@/drizzle/schema";
 import { and, eq, gte } from "drizzle-orm";
 import { DateTime } from "luxon";
+import ClipboardPasteIcon from "@/components/ClipboardPasteIcon";
 
 export default async function Page({ params }: ServerPageProps) {
   const { id } = await params;
@@ -73,7 +74,7 @@ export default async function Page({ params }: ServerPageProps) {
       throw new Error("Database Error");
     });
 
-  let areaData: _AreaData[] = [];
+  let areaData: _Area[] = [];
   if (data[0].city) {
     areaData = await db
       .select(_areaFields)
@@ -85,7 +86,7 @@ export default async function Page({ params }: ServerPageProps) {
       });
   }
 
-  let cityData: _CityData[] = [];
+  let cityData: _City[] = [];
   if (data[0].state) {
     cityData = await db
       .select(_cityFields)
@@ -133,7 +134,7 @@ export default async function Page({ params }: ServerPageProps) {
             Properties
           </h5>
 
-          <Breadcrumb className="bg-gray-50 pb-3 dark:bg-gray-800">
+          <Breadcrumb className="bg-white pb-3 dark:bg-gray-800">
             <BreadcrumbItem href="/">Home</BreadcrumbItem>
             <BreadcrumbItem href="/admin">Admin</BreadcrumbItem>
             <BreadcrumbItem href="/admin/properties">Properties</BreadcrumbItem>
@@ -141,10 +142,11 @@ export default async function Page({ params }: ServerPageProps) {
           </Breadcrumb>
         </div>
 
-        <div className="mx-auto flex w-full flex-col gap-5 overflow-visible rounded-xl bg-gray-900 p-5">
-          <h6 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white">
-            Edit Property Type
-          </h6>
+        <div className="mx-auto flex w-full flex-col gap-5 overflow-visible rounded-xl bg-slate-50 p-5 dark:bg-gray-900">
+          <h3 className="flex gap-4 text-lg font-bold tracking-tight">
+            Edit Property : {data[0].id}{" "}
+            <ClipboardPasteIcon text={data[0].id} />
+          </h3>
           <PropertyEditor
             data={data[0]}
             specialDatesData={specialDatesData}

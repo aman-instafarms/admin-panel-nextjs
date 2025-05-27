@@ -19,7 +19,7 @@ import Link from "next/link";
 import { HiPencil } from "react-icons/hi";
 import Searchbar from "@/components/Searchbar";
 import { like } from "drizzle-orm/pg-core/expressions";
-import { sql } from "drizzle-orm";
+import { desc, sql } from "drizzle-orm";
 import Pagination from "@/components/Pagination";
 import { DateTime } from "luxon";
 import DeleteCustomerButton from "./DeleteCustomerButton";
@@ -53,6 +53,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
   }
 
   const data = await (queryWithFilter ? queryWithFilter : query)
+    .orderBy(desc(customers.createdAt))
     .limit(limit)
     .offset(offset)
     .catch((err) => {
@@ -62,14 +63,14 @@ export default async function Page({ searchParams }: ServerPageProps) {
 
   return (
     <div className="flex w-full flex-col">
-      <Card className="w-full bg-white">
+      <Card className="w-full">
         <div className="space-between flex w-full flex-row items-center">
           <div className="flex w-full flex-col gap-2">
             <h5 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
               Customers
             </h5>
 
-            <Breadcrumb className="bg-gray-50 pb-3 dark:bg-gray-800">
+            <Breadcrumb className="bg-white pb-3 dark:bg-gray-800">
               <BreadcrumbItem href="/">Home</BreadcrumbItem>
               <BreadcrumbItem href="/admin">Admin</BreadcrumbItem>
               <BreadcrumbItem href="#">Customers</BreadcrumbItem>
@@ -86,7 +87,7 @@ export default async function Page({ searchParams }: ServerPageProps) {
           </div>
         </div>
 
-        <div className="mx-auto table-auto overflow-x-auto rounded-xl bg-gray-900 p-5">
+        <div className="mx-auto table-auto overflow-x-auto rounded-xl bg-slate-100 p-5 dark:bg-gray-900">
           <Table>
             <TableHead>
               <TableRow>
@@ -119,11 +120,17 @@ export default async function Page({ searchParams }: ServerPageProps) {
                     {user.gender}
                   </TableCell>
                   <TableCell className="font-medium whitespace-nowrap text-gray-900 dark:text-white">
-                    {Math.floor(
-                      DateTime.now().diff(DateTime.fromSQL(user.dob), "years")
-                        .years,
-                    )}{" "}
-                    years
+                    {user.dob && (
+                      <div>
+                        {Math.floor(
+                          DateTime.now().diff(
+                            DateTime.fromSQL(user.dob),
+                            "years",
+                          ).years,
+                        )}
+                        {" years"}
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-row items-center gap-3">

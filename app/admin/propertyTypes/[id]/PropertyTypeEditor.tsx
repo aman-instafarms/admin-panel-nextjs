@@ -1,6 +1,9 @@
 "use client";
 
-import { editPropertyType } from "@/actions/propertyTypeActions";
+import {
+  createPropertyType,
+  editPropertyType,
+} from "@/actions/propertyTypeActions";
 import MyButton from "@/components/MyButton";
 import { parseServerActionResult } from "@/utils/utils";
 import { Label, TextInput } from "flowbite-react";
@@ -9,7 +12,7 @@ import { useEffect, useTransition } from "react";
 import toast from "react-hot-toast";
 
 interface PropertyTypeEditorProps {
-  data: {
+  data?: {
     id: string;
     name: string;
   };
@@ -19,16 +22,32 @@ export default function PropertyTypeEditor(props: PropertyTypeEditorProps) {
   const [loading, startTransition] = useTransition();
   const router = useRouter();
 
-  const editPropertyTypeWithId = editPropertyType.bind(null, props.data.id);
-
-  const handleSubmit = (formData: FormData) => {
+  const handleSubmit = () => {
+    const form = document.getElementById(
+      "propertyTypeForm",
+    ) as HTMLFormElement | null;
+    if (!form) {
+      return toast.error("Error");
+    }
+    const formData = new FormData(form);
     startTransition(() => {
-      const promise = parseServerActionResult(editPropertyTypeWithId(formData));
+      let promise: Promise<string>;
+      if (props.data) {
+        const editPropertyTypeWithId = editPropertyType.bind(
+          null,
+          props.data.id,
+        );
+        promise = parseServerActionResult(editPropertyTypeWithId(formData));
+      } else {
+        promise = parseServerActionResult(createPropertyType(formData));
+      }
 
       toast.promise(promise, {
         loading: "Saving property type...",
         success: (data) => {
-          router.push("/admin/propertyTypes");
+          if (!props.data) {
+            router.push("/admin/propertyTypes");
+          }
           return data;
         },
         error: (err) => (err as Error).message,
@@ -37,14 +56,20 @@ export default function PropertyTypeEditor(props: PropertyTypeEditorProps) {
   };
 
   useEffect(() => {
-    const el = document.getElementById("propertyType") as HTMLInputElement;
-    el.value = props.data.name;
-  }, []);
+    if (props.data) {
+      const el = document.getElementById(
+        "propertyType",
+      ) as HTMLInputElement | null;
+      if (el) {
+        el.value = props.data.name || "";
+      }
+    }
+  }, [props]);
 
   return (
     <form
-      action={handleSubmit}
       className="mx-auto flex w-full max-w-sm flex-col gap-4"
+      id="propertyTypeForm"
     >
       <div>
         <div className="mb-2 block">
@@ -58,7 +83,7 @@ export default function PropertyTypeEditor(props: PropertyTypeEditorProps) {
           required
         />
       </div>
-      <MyButton type="submit" loading={loading}>
+      <MyButton onClick={handleSubmit} loading={loading}>
         Submit
       </MyButton>
     </form>

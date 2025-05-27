@@ -3,15 +3,14 @@ import {
   _BookingData,
   _CancellationData,
   _PaymentData,
-  _PropertyData,
+  _Property,
   ActivityData,
-  AdminData,
+  Admin,
   AmenityData,
   BankDetail,
   CustomerData,
-  DefaultPricing,
   Owner,
-  UserData,
+  User,
 } from "./types";
 import { DateTime } from "luxon";
 import { v4 } from "uuid";
@@ -110,50 +109,19 @@ export function validateDateStr(dateStr: string | undefined): string | null {
   return null;
 }
 
-export function validatePricing(data: DefaultPricing) {
-  if (data.weekdayPrice === null || data.weekdayPrice <= 0) {
-    return "Invalid Weekday Pricing.";
+export function validateTimeStr(timeStr: string | undefined): string | null {
+  if (!timeStr) return null;
+  const time = DateTime.fromSQL(timeStr);
+  if (time.isValid) {
+    return timeStr;
   }
-  if (data.weekendPrice === null || data.weekendPrice <= 0) {
-    return "Invalid Weekend Pricing.";
-  }
-  if (data.mondayPrice === null || data.mondayPrice <= 0) {
-    return "Invalid Monday Pricing.";
-  }
-  if (data.tuesdayPrice === null || data.tuesdayPrice <= 0) {
-    return "Invalid Tuesday Pricing.";
-  }
-  if (data.wednesdayPrice === null || data.wednesdayPrice <= 0) {
-    return "Invalid Wednesday Pricing.";
-  }
-  if (data.thursdayPrice === null || data.thursdayPrice <= 0) {
-    return "Invalid Thursday Pricing.";
-  }
-  if (data.fridayPrice === null || data.fridayPrice <= 0) {
-    return "Invalid Friday Pricing.";
-  }
-  if (data.saturdayPrice === null || data.saturdayPrice <= 0) {
-    return "Invalid Saturday Pricing.";
-  }
-  if (data.sundayPrice === null || data.sundayPrice <= 0) {
-    return "Invalid Sunday Pricing.";
-  }
-  if (data.daywisePrice === null) {
-    return "Missing day wise pricing flag.";
-  }
+  return null;
 }
 
-export function validatePropertyData(data: _PropertyData): string | null {
+export function validatePropertyData(data: _Property): string | null {
   // Checks
   if (!data.propertyName || data.propertyName.length === 0) {
     return "Invalid Property Name.";
-  }
-  if (!data.checkinTime || data.checkinTime.length === 0) {
-    return "Invalid Checkin time.";
-  }
-
-  if (!data.checkoutTime || data.checkoutTime.length === 0) {
-    return "Invalid Checkout time.";
   }
   // Checking for repeated amenities
   if (data.amenities) {
@@ -231,7 +199,7 @@ export function parseSpecialDates(formData: FormData): {
   return { data: res };
 }
 
-export function parseAdminFormData(formData: FormData): AdminData {
+export function parseAdminFormData(formData: FormData): Admin {
   const firstName = parseString(formData.get("firstName")?.toString());
   const email = parseString(formData.get("email")?.toString());
   if (firstName === null) {
@@ -249,7 +217,16 @@ export function parseAdminFormData(formData: FormData): AdminData {
   };
 }
 
-export function parsePropertyFormData(formData: FormData): _PropertyData {
+export function parsePropertyFormData(formData: FormData): _Property {
+  const propertyName = parseString(formData.get("propertyName")?.toString());
+  const propertyCode = parseString(formData.get("propertyCode")?.toString());
+
+  if (!propertyName) {
+    throw new Error("Enter Property name.");
+  }
+  if (!propertyCode) {
+    throw new Error("Enter Property name.");
+  }
   const amenitiesIds: string[] = [];
   const activitiesIds: string[] = [];
 
@@ -305,8 +282,8 @@ export function parsePropertyFormData(formData: FormData): _PropertyData {
 
   return {
     id: v4(),
-    propertyName: parseString(formData.get("propertyName")?.toString()),
-    propertyCode: parseString(formData.get("propertyCode")?.toString()),
+    propertyName,
+    propertyCode,
     baseGuestCount: parseNumber(formData.get("baseGuestCount")?.toString()),
     maxGuestCount: parseNumber(formData.get("maxGuestCount")?.toString()),
 
@@ -480,8 +457,8 @@ export function parsePropertyFormData(formData: FormData): _PropertyData {
     defaultGstPercentage: parseNumber(
       formData.get("defaultGstPercentage")?.toString(),
     ),
-    checkinTime: parseString(formData.get("checkinTime")?.toString()),
-    checkoutTime: parseString(formData.get("checkoutTime")?.toString()),
+    checkinTime: validateTimeStr(formData.get("checkinTime")?.toString()),
+    checkoutTime: validateTimeStr(formData.get("checkoutTime")?.toString()),
 
     latitude: parseString(formData.get("latitude")?.toString()),
     longtitude: parseString(formData.get("longtitude")?.toString()),
@@ -499,7 +476,7 @@ export function parsePropertyFormData(formData: FormData): _PropertyData {
   };
 }
 
-export function parseUserFormData(formData: FormData): UserData {
+export function parseUserFormData(formData: FormData): User {
   const firstName = parseString(formData.get("firstName")?.toString());
   const email = parseString(formData.get("email")?.toString());
   const mobileNumber = parseString(formData.get("mobileNumber")?.toString());

@@ -5,7 +5,7 @@ import { eq, like, sql } from "drizzle-orm";
 import { properties, propertyTypes, specialDates } from "@/drizzle/schema";
 import { revalidatePath } from "next/cache";
 import {
-  _PropertyData,
+  _Property,
   ServerActionResult,
   ServerSearchResult,
 } from "@/utils/types";
@@ -24,9 +24,9 @@ export const createProperty = async (
   try {
     const admin = await isAdmin();
     if (!admin) {
-      throw new Error("Unauthorized");
+      return { error: "Unauthorized" };
     }
-    const data: _PropertyData = parsePropertyFormData(formData);
+    const data: _Property = parsePropertyFormData(formData);
 
     const err = validatePropertyData(data);
     if (err) {
@@ -38,7 +38,7 @@ export const createProperty = async (
       .values(data)
       .then(() => {
         revalidatePath("/admin");
-        return { success: "Created new property type." };
+        return { success: "Created new property." };
       })
       .catch((err) => {
         console.log("DB Error: ", err);
@@ -146,7 +146,7 @@ export const deleteProperty = async (
           throw new Error("Property not found.");
         }
         revalidatePath("/admin");
-        return { success: "Property type deleted." };
+        return { success: "Property deleted." };
       })
       .catch((err) => {
         console.log("DB Error: ", err);
@@ -163,7 +163,7 @@ export const deleteProperty = async (
 
 export const getPropertyById = async (
   id: string,
-): Promise<ServerSearchResult<_PropertyData>> => {
+): Promise<ServerSearchResult<_Property>> => {
   try {
     const admin = await isAdmin();
     if (!admin) {
@@ -194,7 +194,7 @@ export const getPropertyById = async (
 
 export const searchProperty = async (
   formData: FormData,
-): Promise<ServerSearchResult<_PropertyData[]>> => {
+): Promise<ServerSearchResult<_Property[]>> => {
   try {
     const admin = await isAdmin();
     if (!admin) {

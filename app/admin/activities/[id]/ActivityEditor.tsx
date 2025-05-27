@@ -31,7 +31,9 @@ export default function ActivityEditor(props: ActivityEditorProps) {
       toast.promise(promise, {
         loading: "Saving Activity...",
         success: (data) => {
-          router.push("/admin/activities");
+          if (!props.data) {
+            router.push("/admin/activities");
+          }
           return data;
         },
         error: (err) => (err as Error).message,

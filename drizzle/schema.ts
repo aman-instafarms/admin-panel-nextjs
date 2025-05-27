@@ -1,3 +1,4 @@
+import { relations, sql } from "drizzle-orm";
 import {
   pgTable,
   pgEnum,
@@ -10,8 +11,9 @@ import {
   date,
   json,
   timestamp,
+  time,
+  real,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
 import {
   ActivityData,
   AmenityData,
@@ -26,6 +28,22 @@ import {
   webhookStatusOptions,
 } from "@/utils/types";
 
+export const timestamps = {
+  createdAt: timestamp("createdAt", {
+    withTimezone: true,
+    mode: "string",
+  })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updatedAt", {
+    withTimezone: true,
+    mode: "string",
+  })
+    .notNull()
+    .defaultNow()
+    .$onUpdateFn(() => sql`SELECT CURRENT_TIMESTAMP`),
+};
+
 export const rolesEnum = pgEnum("role", roleOptions);
 
 export const webhookStatusEnum = pgEnum("webhookstatus", webhookStatusOptions);
@@ -33,42 +51,39 @@ export const webhookStatusEnum = pgEnum("webhookstatus", webhookStatusOptions);
 export const propertyTypes = pgTable("propertyTypes", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
+  ...timestamps,
 });
-
-export const propertyTypesRelations = relations(propertyTypes, ({ many }) => ({
-  properties: many(properties),
-}));
 
 export const activities = pgTable("activities", {
   id: uuid("id").primaryKey().defaultRandom(),
   activity: text("activity").notNull(),
+  ...timestamps,
 });
 
 export const amenities = pgTable("amenities", {
   id: uuid("id").primaryKey().defaultRandom(),
   amenity: text("amenity").notNull(),
+  ...timestamps,
 });
 
 export const users = pgTable("users", {
   id: uuid("id").notNull().primaryKey().defaultRandom(),
-  firstName: text("firstName").notNull(),
+  firstName: text("firstName"),
   lastName: text("lastName"),
-  mobileNumber: varchar("mobileNumber", { length: 256 })
-    .notNull()
-    .unique("unique_mobileNumber"),
+  mobileNumber: varchar("mobileNumber", { length: 256 }).unique(
+    "unique_mobileNumber",
+  ),
   whatsappNumber: varchar("whatsappNumber", { length: 256 }),
-  email: varchar("email", { length: 256 }).notNull().unique("unique_email"),
+  email: varchar("email", { length: 256 }).unique("unique_email"),
+  ...timestamps,
 });
 
 export const ownersOnProperties = pgTable(
   "ownersOnProperties",
   {
-    ownerId: uuid("ownerId")
-      .notNull()
-      .references(() => users.id),
-    propertyId: uuid("propertyId")
-      .notNull()
-      .references(() => properties.id),
+    ownerId: uuid("ownerId").notNull(),
+    propertyId: uuid("propertyId").notNull(),
+    ...timestamps,
   },
   (table) => [primaryKey({ columns: [table.ownerId, table.propertyId] })],
 );
@@ -90,12 +105,9 @@ export const ownersOnPropertiesRelations = relations(
 export const managersOnProperties = pgTable(
   "managersOnProperties",
   {
-    managerId: uuid("managerId")
-      .notNull()
-      .references(() => users.id),
-    propertyId: uuid("propertyId")
-      .notNull()
-      .references(() => properties.id),
+    managerId: uuid("managerId").notNull(),
+    propertyId: uuid("propertyId").notNull(),
+    ...timestamps,
   },
   (table) => [primaryKey({ columns: [table.managerId, table.propertyId] })],
 );
@@ -117,12 +129,9 @@ export const managersOnPropertiesRelations = relations(
 export const caretakersOnProperties = pgTable(
   "caretakersOnProperties",
   {
-    caretakerId: uuid("caretakerId")
-      .notNull()
-      .references(() => users.id),
-    propertyId: uuid("propertyId")
-      .notNull()
-      .references(() => properties.id),
+    caretakerId: uuid("caretakerId").notNull(),
+    propertyId: uuid("propertyId").notNull(),
+    ...timestamps,
   },
   (table) => [primaryKey({ columns: [table.caretakerId, table.propertyId] })],
 );
@@ -152,8 +161,8 @@ export const properties = pgTable("properties", {
   commonReferenceID: uuid(),
 
   // Property Detail
-  propertyName: text("propertyName"),
-  propertyCode: text("propertyCode"),
+  propertyName: text("propertyName").notNull(),
+  propertyCode: text("propertyCode").notNull(),
 
   // Day wise price and charges
   weekdayPrice: integer("weekdayPrice"),
@@ -245,8 +254,8 @@ export const properties = pgTable("properties", {
 
   bookingType: text("bookingType"),
   defaultGstPercentage: integer("defaultGstPercentage"),
-  checkinTime: timestamp({ withTimezone: true, mode: "string" }),
-  checkoutTime: timestamp({ withTimezone: true, mode: "string" }),
+  checkinTime: time("checkinTime"),
+  checkoutTime: time("checkoutTime"),
 
   latitude: text("latitude"),
   longtitude: text("longtitude"),
@@ -262,41 +271,14 @@ export const properties = pgTable("properties", {
   // json data
   amenities: json("amenities").$type<AmenityData[]>(),
   activities: json("activities").$type<ActivityData[]>(),
+  ...timestamps,
 });
-
-export const propertiesRelations = relations(properties, ({ one, many }) => ({
-  propertyType: one(propertyTypes, {
-    fields: [properties.propertyTypeId],
-    references: [propertyTypes.id],
-  }),
-  area: one(areas, {
-    fields: [properties.areaId],
-    references: [areas.id],
-  }),
-  city: one(cities, {
-    fields: [properties.cityId],
-    references: [cities.id],
-  }),
-  state: one(states, {
-    fields: [properties.stateId],
-    references: [states.id],
-  }),
-  owners: many(ownersOnProperties),
-  managers: many(managersOnProperties),
-  caretakers: many(caretakersOnProperties),
-  customPricing: many(specialDates),
-  coupons: many(propertiesOnCoupons),
-}));
 
 export const states = pgTable("states", {
   id: uuid("id").primaryKey().defaultRandom(),
   state: text("state").notNull(),
+  ...timestamps,
 });
-
-export const statesRelations = relations(states, ({ many }) => ({
-  cities: many(cities),
-  properties: many(properties),
-}));
 
 export const cities = pgTable("cities", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -304,16 +286,8 @@ export const cities = pgTable("cities", {
   stateId: uuid("stateId")
     .notNull()
     .references(() => states.id),
+  ...timestamps,
 });
-
-export const citiesRelations = relations(cities, ({ one, many }) => ({
-  state: one(states, {
-    fields: [cities.stateId],
-    references: [states.id],
-  }),
-  properties: many(properties),
-  areas: many(areas),
-}));
 
 export const areas = pgTable("areas", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -321,15 +295,8 @@ export const areas = pgTable("areas", {
   cityId: uuid("cityId")
     .notNull()
     .references(() => cities.id),
+  ...timestamps,
 });
-
-export const areasRelations = relations(areas, ({ one, many }) => ({
-  city: one(cities, {
-    fields: [areas.cityId],
-    references: [cities.id],
-  }),
-  properties: many(properties),
-}));
 
 export const specialDates = pgTable("specialDates", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -343,34 +310,30 @@ export const specialDates = pgTable("specialDates", {
   infantExtraGuestCharge: integer("infantExtraGuestCharge"),
   baseGuestCount: integer("baseGuestCount"),
   discount: integer("discount"),
+  ...timestamps,
 });
 
-export const specialDatesRelations = relations(specialDates, ({ one }) => ({
-  property: one(properties, {
-    fields: [specialDates.propertyId],
-    references: [properties.id],
-  }),
-}));
-
 export const admins = pgTable("admins", {
-  id: uuid().primaryKey().defaultRandom(),
-  firstName: text().notNull(),
-  lastName: text(),
-  email: text().notNull(),
-  phoneNumber: text(),
+  id: uuid("id").primaryKey().defaultRandom(),
+  firstName: text("firstName").notNull(),
+  lastName: text("lastName"),
+  email: text("email").notNull(),
+  phoneNumber: text("phoneNumber"),
+  ...timestamps,
 });
 
 export const genderEnum = pgEnum("gender", genderOptions);
 
 export const customers = pgTable("customers", {
-  id: uuid().primaryKey().defaultRandom(),
-  commonReferenceID: uuid(),
-  firstName: text().notNull(),
-  lastName: text(),
-  email: text(),
-  dob: date({ mode: "string" }).notNull(),
-  mobileNumber: text().notNull(),
-  gender: genderEnum("gender").notNull(),
+  id: uuid("id").primaryKey().defaultRandom(),
+  firstName: text("firstName").notNull(),
+  lastName: text("lastName"),
+  email: text("email"),
+  dob: date("dob", { mode: "string" }),
+  mobileNumber: text("mobileNumber").notNull(),
+  gender: genderEnum("gender"),
+  referenceId: text("referenceId"),
+  ...timestamps,
 });
 
 export const refundStatusEnum = pgEnum("refundStatusEnum", refundStatusOptions);
@@ -380,53 +343,54 @@ export const cancellationTypeEnum = pgEnum(
 );
 
 export const cancellations = pgTable("cancellations", {
-  bookingId: uuid()
+  bookingId: uuid("bookingId")
     .primaryKey()
     .references(() => bookings.id),
-  refundAmount: integer().notNull(),
-  refundStatus: refundStatusEnum().notNull(),
-  cancellationType: cancellationTypeEnum().notNull(),
-  referencePersonId: uuid()
+  refundAmount: integer("refundAmount").notNull(),
+  refundStatus: refundStatusEnum("refundStatus").notNull(),
+  cancellationType: cancellationTypeEnum("cancellationType").notNull(),
+  referencePersonId: uuid("referencePersonId")
     .notNull()
     .references(() => users.id),
+  ...timestamps,
 });
 
 export const bookingTypeEnum = pgEnum("bookingType", bookingTypeOptions);
 
 export const bookings = pgTable("bookings", {
-  id: uuid().primaryKey().defaultRandom(),
-  commonReferenceID: uuid(),
-  propertyId: uuid()
+  id: uuid("id").primaryKey().defaultRandom(),
+  propertyId: uuid("propertyId")
     .notNull()
     .references(() => properties.id),
-  customerId: uuid()
+  customerId: uuid("customerId")
     .notNull()
     .references(() => customers.id),
-  bookingType: bookingTypeEnum("bookingType").notNull(),
-  bookingSource: text(),
-  adultCount: integer().notNull(),
-  childrenCount: integer().notNull(),
-  infantCount: integer().notNull(),
-  checkinDate: date({ mode: "string" }).notNull(),
-  checkoutDate: date({ mode: "string" }).notNull(),
-  bookingCreatorId: uuid()
+  bookingType: text("bookingType"),
+  bookingSource: text("bookingSource"),
+  adultCount: integer("adultCount").notNull(),
+  childrenCount: integer("childrenCount").notNull(),
+  infantCount: integer("infantCount").notNull(),
+  checkinDate: date("checkinDate", { mode: "string" }).notNull(),
+  checkoutDate: date("checkoutDate", { mode: "string" }).notNull(),
+  bookingCreatorId: uuid("bookingCreatorId")
     .notNull()
     .references(() => users.id),
-  bookingRemarks: text(),
-  specialRequests: text(),
+  bookingRemarks: text("bookingRemarks"),
+  specialRequests: text("specialRequests"),
 
   // commercial data
-  rentalCharge: integer().notNull(),
-  extraGuestCharge: integer().notNull(),
-  ownerDiscount: integer().notNull(),
-  multipleNightsDiscount: integer().notNull(),
-  couponDiscount: integer().notNull(),
-  totalDiscount: integer().notNull(),
-  gstAmount: integer().notNull(),
-  gstPercentage: integer().notNull(),
-  otaCommission: integer().notNull(),
-  paymentGatewayCharge: integer().notNull(),
-  netOwnerRevenue: integer().notNull(),
+  rentalCharge: real("rentalCharge").notNull(),
+  extraGuestCharge: real("extraGuestCharge").notNull(),
+  ownerDiscount: real("ownerDiscount").notNull(),
+  multipleNightsDiscount: real("multipleNightsDiscount").notNull(),
+  couponDiscount: real("couponDiscount").notNull(),
+  totalDiscount: real("totalDiscount").notNull(),
+  gstAmount: real("gstAmount").notNull(),
+  gstPercentage: real("gstPercentage").notNull(),
+  otaCommission: real("otaCommission").notNull(),
+  paymentGatewayCharge: real("paymentGatewayCharge").notNull(),
+  netOwnerRevenue: real("netOwnerRevenue").notNull(),
+  ...timestamps,
 });
 
 export const transactionTypeEnum = pgEnum(
@@ -437,49 +401,63 @@ export const paymentTypeEnum = pgEnum("paymentTypeEnum", paymentTypeOptions);
 export const paymentModeEnum = pgEnum("paymentModeEnum", paymentModeOptions);
 
 export const payments = pgTable("payments", {
-  id: uuid().primaryKey().defaultRandom(),
-  bookingId: uuid()
+  id: uuid("id").primaryKey().defaultRandom(),
+  bookingId: uuid("bookingId")
     .notNull()
     .references(() => bookings.id),
-  transactionType: transactionTypeEnum().notNull(),
-  amount: integer().notNull(),
-  paymentDate: timestamp({ mode: "string" }).notNull(),
-  referencePersonId: uuid()
-    .notNull()
-    .references(() => users.id),
-  paymentType: paymentTypeEnum().notNull(),
-  paymentMode: paymentModeEnum().notNull(),
-  paymentCreator: uuid(),
-  paymentDeletor: uuid(),
-  isDeleted: boolean().notNull().default(false),
+  transactionType: transactionTypeEnum("transactionType").notNull(),
+  amount: integer("amount").notNull(),
+  paymentDate: timestamp("paymentDate", { mode: "string" }).notNull(),
+  referencePersonId: uuid("referencePersonId").references(() => users.id),
+  paymentType: paymentTypeEnum("paymentType").notNull(),
+  paymentMode: paymentModeEnum("paymentMode").notNull(),
+  paymentCreator: uuid("paymentCreator").references(() => users.id),
+  paymentDeletor: uuid("paymentDeletor").references(() => users.id),
+  isDeleted: boolean("isDeleted").notNull().default(false),
 
   // Bank Details
-  bankAccountNumber: text(),
-  bankName: text(),
-  bankAccountHolderName: text(),
-  bankIfsc: text(),
-  bankNickname: text(),
+  bankAccountNumber: text("bankAccountNumber"),
+  bankName: text("bankName"),
+  bankAccountHolderName: text("bankAccountHolderName"),
+  bankIfsc: text("bankIfsc"),
+  bankNickname: text("bankNickname"),
+  ...timestamps,
 });
 
 export const ezeeWebhookData = pgTable("ezWebhookData", {
-  id: uuid().primaryKey().defaultRandom(),
-  reqBody: json(),
-  status: text().default("PENDING").notNull(),
-  createdAt: timestamp({ mode: "string", withTimezone: true })
-    .notNull()
-    .defaultNow(),
+  id: uuid("id").primaryKey().defaultRandom(),
+  reqBody: json("reqBody"),
+  status: text("status").default("PENDING").notNull(),
+  ...timestamps,
 });
 
 export const bankDetails = pgTable("bankDetails", {
-  id: uuid().primaryKey().notNull(),
-  userId: uuid()
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  userId: uuid("userId")
     .notNull()
     .references(() => users.id),
-  bankName: varchar({ length: 255 }).notNull(),
-  accountHolderName: varchar({ length: 255 }).notNull(),
-  accountNumber: varchar({ length: 255 }).notNull(),
-  nickname: varchar({ length: 255 }).notNull(),
-  ifsc: varchar({ length: 255 }).notNull(),
+  bankName: varchar("bankName", { length: 255 }),
+  bankAccountHolderName: varchar("bankAccountHolderName", { length: 255 }),
+  bankAccountNumber: varchar("bankAccountNumber", { length: 255 }),
+  bankNickname: varchar("bankNickname", { length: 255 }),
+  bankIfsc: varchar("bankIfsc", { length: 255 }),
+  ...timestamps,
+});
+
+export const blockedDates = pgTable("blockedDates", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  propertyId: uuid("propertyId")
+    .notNull()
+    .references(() => properties.id),
+  blockedDate: date("blockedDate", { mode: "string" }).notNull(),
+  ...timestamps,
+});
+
+export const instafarmsWebhook = pgTable("instafarmsWebhook", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  reqBody: json("reqBody"),
+  status: text("status").default("PENDING").notNull(),
+  ...timestamps,
 });
 
 // Create enum for coupon discount types
