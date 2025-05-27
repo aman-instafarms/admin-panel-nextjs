@@ -11,7 +11,8 @@
     "format:check": "prettier . --check",
     "postinstall": "flowbite-react patch",
     "studio": "npx drizzle-kit studio",
-    "push": "npx drizzle-kit push"
+    "push": "npx drizzle-kit push",
+    "seed": "tsx drizzle/seed.ts"
   },
   "dependencies": {
     "@firebase/auth": "^1.10.1",

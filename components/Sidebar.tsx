@@ -17,10 +17,11 @@ import {
   HiUserCircle,
 } from "react-icons/hi";
 import { HiWrench } from "react-icons/hi2";
+import { PiShareNetworkBold } from "react-icons/pi";
 
 export default function AdminSidebar() {
   return (
-    <Sidebar className="m-3 h-full w-78">
+    <Sidebar className="m-3 h-full w-78 flex-shrink-0">
       <SidebarItems>
         <SidebarItemGroup>
           <SidebarItem href="/admin/admins" icon={HiInformationCircle}>
@@ -66,6 +67,9 @@ export default function AdminSidebar() {
         <SidebarItemGroup>
           <SidebarItem href="/admin/ezeeWebhook" icon={HiInformationCircle}>
             Ezee Webhook
+          </SidebarItem>
+          <SidebarItem href="/admin/jarvisLog" icon={PiShareNetworkBold}>
+            Jarvis Webhook
           </SidebarItem>
         </SidebarItemGroup>
       </SidebarItems>

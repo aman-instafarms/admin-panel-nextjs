@@ -21,6 +21,11 @@ export const bookingTypeOptions = ["Online", "Offline"] as const;
 export const transactionTypeOptions = ["Credit", "Debit"] as const;
 export const paymentTypeOptions = ["Security Deposit", "Rent"] as const;
 export const paymentModeOptions = ["Cash", "Online"] as const;
+export const instaWebhookEventTypes = [
+  "createBooking",
+  "updateBooking",
+  "cancelBooking",
+] as const;
 
 export interface ServerActionResult {
   success?: string;

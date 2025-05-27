@@ -31,7 +31,7 @@ export default function RootLayout({
         <ThemeModeScript mode="dark" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} bg-slate-200 text-black! antialiased dark:bg-gray-900 dark:text-white!`}
+        className={`${geistSans.variable} ${geistMono.variable} w-screen bg-slate-200 text-black! antialiased dark:bg-gray-900 dark:text-white!`}
       >
         <AdminNavbar />
         {children}

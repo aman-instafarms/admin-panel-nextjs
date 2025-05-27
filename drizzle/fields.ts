@@ -9,6 +9,7 @@ import {
   cities,
   customers,
   ezeeWebhookData,
+  instafarmsWebhook,
   payments,
   properties,
   propertyTypes,
@@ -347,4 +348,14 @@ export const _bankFields = {
   accountNumber: bankDetails.bankAccountNumber,
   nickname: bankDetails.bankNickname,
   ifsc: bankDetails.bankIfsc,
+};
+
+export const instafarmsWebhookFields = {
+  id: instafarmsWebhook.id,
+  reqBody: instafarmsWebhook.reqBody,
+  eventType: instafarmsWebhook.eventType,
+  timeSent: instafarmsWebhook.timeSent,
+  eventStatus: instafarmsWebhook.eventStatus,
+  lastResponseData: instafarmsWebhook.lastResponseData,
+  lastResponseTimestamp: instafarmsWebhook.lastResponseTimestamp,
 };

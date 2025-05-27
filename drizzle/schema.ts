@@ -20,6 +20,7 @@ import {
   bookingTypeOptions,
   cancellationTypeOptions,
   genderOptions,
+  instaWebhookEventTypes,
   paymentModeOptions,
   paymentTypeOptions,
   refundStatusOptions,
@@ -404,9 +405,18 @@ export const blockedDates = pgTable("blockedDates", {
   ...timestamps,
 });
 
+export const instaWebhookEventTypeEnum = pgEnum(
+  "webhook_event_type",
+  instaWebhookEventTypes,
+);
+
 export const instafarmsWebhook = pgTable("instafarmsWebhook", {
   id: uuid("id").primaryKey().defaultRandom(),
   reqBody: json("reqBody"),
-  status: text("status").default("PENDING").notNull(),
+  eventType: instaWebhookEventTypeEnum("eventType").notNull(),
+  timeSent: integer().default(0).notNull(),
+  eventStatus: text("status").default("PENDING").notNull(),
+  lastResponseData: json(), // This will store the response from Instafarms API
+  lastResponseTimestamp: timestamp({ mode: "string", withTimezone: true }),
   ...timestamps,
 });
