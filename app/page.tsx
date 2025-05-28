@@ -36,7 +36,7 @@ export default function Home() {
         // Get the Firebase ID token
         const token = await result.user.getIdToken();
         // Store the token as a session cookie (will expire when browser closes)
-        Cookies.set("token", token, {
+        Cookies.set("jarvis-admin-token", token, {
           secure: process.env.NODE_ENV === "production",
           sameSite: "strict",
         });

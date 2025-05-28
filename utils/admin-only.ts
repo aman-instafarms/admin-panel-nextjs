@@ -9,7 +9,7 @@ import { initFirebaseAdmin } from "./firebase-admin";
 export async function isAdmin() {
   // Get the auth token from the cookies
   const cookie = await cookies();
-  const token = cookie.get("token")?.value;
+  const token = cookie.get("jarvis-admin-token")?.value;
 
   if (!token) {
     throw new Error("You are not logged in.");

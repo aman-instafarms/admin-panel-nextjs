@@ -23,7 +23,7 @@ export default function AdminNavbar() {
     try {
       const auth = getAuth(app);
       await auth.signOut();
-      Cookies.remove("token");
+      Cookies.remove("jarvis-admin-token");
       await revalidateAfterLogin();
       router.push("/");
     } catch (err) {
