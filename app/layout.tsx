@@ -18,6 +18,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Jarvis Admin App",
   description: "",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function RootLayout({
@@ -29,6 +33,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <ThemeModeScript mode="dark" />
+        <meta name="robots" content="noindex, nofollow" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} bg-slate-200 text-black! antialiased dark:bg-gray-900 dark:text-white!`}
