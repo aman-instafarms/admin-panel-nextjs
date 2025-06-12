@@ -39,6 +39,9 @@ export default function AdminSidebar() {
           <SidebarItem href="/admin/bookings" icon={HiCalendar}>
             Bookings
           </SidebarItem>
+          <SidebarItem href="/admin/newBooking" icon={HiCalendar}>
+            Bookings in Range
+          </SidebarItem>
         </SidebarItemGroup>
         <SidebarItemGroup>
           <SidebarItem href="/admin/propertyTypes" icon={HiWrench}>
